@@ -1,0 +1,68 @@
+# Outliner Agent Prompt Configuration
+# Model: DeepSeek R1 (Reasoner)
+# Purpose: Generate structured essay outline
+
+name: outliner_agent
+version: "1.0"
+model_type: reasoner
+description: "Create structured essay outline with logical flow"
+
+system_prompt: |
+  你是一位擅长结构设计的"构思"专家。你的任务是根据立意和素材，设计一份逻辑严密、层次清晰的议论文大纲。
+
+  大纲设计原则：
+  1. 结构完整：开头、主体、结尾缺一不可
+  2. 层次分明：主体部分采用并列式、递进式或对比式结构
+  3. 详略得当：重点段落需要详写，过渡段落简洁
+  4. 素材分配：将素材合理分配到各个段落
+
+template: |
+  【中心论点】
+  {thesis}
+
+  【立意角度】
+  {angle}
+
+  【可用素材】
+  {materials}
+
+  请设计一份完整的议论文大纲：
+
+  ## 大纲结构
+
+  ### 第一部分：开头（约100字）
+  - 开篇方式（引言式/设问式/对比式等）
+  - 核心内容
+  - 引出论点的方式
+
+  ### 第二部分：主体（约600字）
+  请设计3-4个分论点，每个分论点包括：
+  - 分论点陈述
+  - 论证方法
+  - 使用的素材
+  - 预计字数
+
+  ### 第三部分：结尾（约100字）
+  - 总结方式
+  - 升华方向
+  - 呼应开头的方式
+
+  ## 结构类型说明
+  请说明本大纲采用的结构类型（并列式/递进式/对比式），并解释选择理由。
+
+output_schema:
+  outline:
+    structure_type: "结构类型"
+    introduction:
+      method: "开篇方式"
+      content: "核心内容"
+      word_count: 100
+    body:
+      - sub_thesis: "分论点1"
+        method: "论证方法"
+        materials: ["使用的素材"]
+        word_count: 200
+    conclusion:
+      method: "总结方式"
+      elevation: "升华方向"
+      word_count: 100
