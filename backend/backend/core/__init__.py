@@ -1,10 +1,18 @@
 """Core module - Business logic, agents, and LangGraph workflow."""
 
-from .state import EssayState, merge_dicts
-from .graph import create_workflow
+from .security import (
+    verify_password,
+    get_password_hash,
+    create_access_token,
+    decode_access_token,
+)
+
+# Note: EssayState, merge_dicts, and create_workflow will be added in Phase 3
 
 __all__ = [
-    "EssayState",
-    "merge_dicts",
-    "create_workflow",
+    # Security
+    "verify_password",
+    "get_password_hash",
+    "create_access_token",
+    "decode_access_token",
 ]
