@@ -7,7 +7,8 @@ from .security import (
     decode_access_token,
 )
 
-# Note: EssayState, merge_dicts, and create_workflow will be added in Phase 3
+from .state import EssayState, merge_dicts, ALL_STYLES
+from .graph import create_workflow, run_workflow, app as workflow_app
 
 __all__ = [
     # Security
@@ -15,4 +16,12 @@ __all__ = [
     "get_password_hash",
     "create_access_token",
     "decode_access_token",
+    # State
+    "EssayState",
+    "merge_dicts",
+    "ALL_STYLES",
+    # Workflow
+    "create_workflow",
+    "run_workflow",
+    "workflow_app",
 ]
