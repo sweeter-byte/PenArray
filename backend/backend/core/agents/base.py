@@ -127,7 +127,7 @@ def load_prompt(agent_name: str) -> Dict[str, Any]:
     Raises:
         FileNotFoundError: If prompt file doesn't exist
     """
-    prompts_dir = Path(__file__).parent.parent / "prompts"
+    prompts_dir = Path(__file__).parent.parent.parent / "prompts"
     prompt_file = prompts_dir / f"{agent_name}.yaml"
 
     if not prompt_file.exists():
