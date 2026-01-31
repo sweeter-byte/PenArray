@@ -9,8 +9,11 @@ import {
   AlertCircle,
   BookOpen,
   Star,
+  X,
+  Eye,
 } from 'lucide-react';
 import clsx from 'clsx';
+import ReactMarkdown from 'react-markdown';
 
 /**
  * Agent step configuration
@@ -18,59 +21,65 @@ import clsx from 'clsx';
 const AGENT_STEPS = [
   {
     key: 'strategist',
-    name: 'Strategist',
-    nameCn: 'Strategist',
+    name: '策划师',
+    nameCn: '策划师',
     icon: Lightbulb,
-    description: 'Analyzing topic and determining angle...',
+    description: '正在分析题目，确定立意角度...',
     color: 'text-amber-500',
     bgColor: 'bg-amber-100',
+    modalTitle: '审题分析结果',
   },
   {
     key: 'librarian',
-    name: 'Librarian',
-    nameCn: 'Librarian',
+    name: '资料员',
+    nameCn: '资料员',
     icon: Search,
-    description: 'Retrieving quotes and materials...',
+    description: '正在检索素材和论据...',
     color: 'text-blue-500',
     bgColor: 'bg-blue-100',
+    modalTitle: '素材检索结果',
   },
   {
     key: 'outliner',
-    name: 'Outliner',
-    nameCn: 'Outliner',
+    name: '大纲师',
+    nameCn: '大纲师',
     icon: ListOrdered,
-    description: 'Creating essay outline...',
+    description: '正在生成文章大纲...',
     color: 'text-green-500',
     bgColor: 'bg-green-100',
+    modalTitle: '文章大纲',
   },
   {
     key: 'writer',
-    name: 'Writers',
-    nameCn: 'Writers',
+    name: '写手组',
+    nameCn: '写手组',
     icon: PenTool,
-    description: 'Writing three essay styles...',
+    description: '三位写手正在创作不同风格的作文...',
     color: 'text-purple-500',
     bgColor: 'bg-purple-100',
     subSteps: ['writer_profound', 'writer_rhetorical', 'writer_steady'],
+    modalTitle: '写作进度',
   },
   {
     key: 'grader',
-    name: 'Graders',
-    nameCn: 'Graders',
+    name: '评分组',
+    nameCn: '评分组',
     icon: Star,
-    description: 'Scoring and critiquing essays...',
+    description: '正在评阅和打分...',
     color: 'text-orange-500',
     bgColor: 'bg-orange-100',
     subSteps: ['grader_profound', 'grader_rhetorical', 'grader_steady'],
+    modalTitle: '评分详情',
   },
   {
     key: 'completed',
-    name: 'Complete',
-    nameCn: 'Complete',
+    name: '完成',
+    nameCn: '完成',
     icon: CheckCircle,
-    description: 'Generation complete!',
+    description: '生成完成！',
     color: 'text-emerald-500',
     bgColor: 'bg-emerald-100',
+    modalTitle: '生成结果',
   },
 ];
 
@@ -99,14 +108,123 @@ function getStepIndex(agentKey) {
 }
 
 /**
+ * Format intermediate data for display
+ */
+function formatIntermediateData(data) {
+  if (!data) return '暂无数据';
+
+  if (typeof data === 'string') {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    return data.map((item, i) => `${i + 1}. ${typeof item === 'string' ? item : JSON.stringify(item)}`).join('\n');
+  }
+
+  if (typeof data === 'object') {
+    const parts = [];
+    for (const [key, value] of Object.entries(data)) {
+      const keyMap = {
+        angle: '立意角度',
+        thesis: '中心论点',
+        quotes: '名言警句',
+        facts: '事实论据',
+        theories: '理论支撑',
+        literature: '文学素材',
+        structure_type: '结构类型',
+        introduction: '开头',
+        body: '主体',
+        conclusion: '结尾',
+      };
+      const displayKey = keyMap[key] || key;
+
+      if (Array.isArray(value)) {
+        parts.push(`**${displayKey}：**\n${value.map((v, i) => `- ${v}`).join('\n')}`);
+      } else if (typeof value === 'object' && value !== null) {
+        parts.push(`**${displayKey}：**\n${JSON.stringify(value, null, 2)}`);
+      } else if (value) {
+        parts.push(`**${displayKey}：** ${value}`);
+      }
+    }
+    return parts.join('\n\n');
+  }
+
+  return JSON.stringify(data, null, 2);
+}
+
+/**
+ * Intermediate Data Modal Component
+ */
+function IntermediateModal({ isOpen, onClose, title, data }) {
+  if (!isOpen) return null;
+
+  const formattedData = formatIntermediateData(data);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div className="flex items-center space-x-2">
+            <Eye className="w-5 h-5 text-indigo-600" />
+            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto">
+          {data ? (
+            <div className="prose prose-sm max-w-none">
+              <ReactMarkdown>{formattedData}</ReactMarkdown>
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">
+              该步骤尚未完成，暂无数据
+            </p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t bg-gray-50 rounded-b-xl">
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * ProgressStream Component
  *
  * Displays real-time progress of the essay generation workflow.
  * Shows a visual stepper with current agent status and a log window.
+ * Icons are clickable to show intermediate outputs.
  */
-function ProgressStream({ currentAgent, message, logs = [], isComplete, isError }) {
+function ProgressStream({ currentAgent, message, logs = [], isComplete, isError, intermediateData = {} }) {
   const logContainerRef = useRef(null);
   const currentStepIndex = getStepIndex(currentAgent);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalStep, setModalStep] = useState(null);
 
   // Auto-scroll logs
   useEffect(() => {
@@ -115,13 +233,40 @@ function ProgressStream({ currentAgent, message, logs = [], isComplete, isError 
     }
   }, [logs]);
 
+  // Handle step click
+  const handleStepClick = (step, index) => {
+    // Only allow clicking on completed steps or currently active step
+    if (index <= currentStepIndex || isComplete) {
+      setModalStep(step);
+      setModalOpen(true);
+    }
+  };
+
+  // Get data for a step
+  const getStepData = (stepKey) => {
+    const data = intermediateData[stepKey];
+    if (data?.data) return data.data;
+    return null;
+  };
+
   return (
     <div className="card">
+      {/* Intermediate Data Modal */}
+      <IntermediateModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalStep?.modalTitle || '详情'}
+        data={modalStep ? getStepData(modalStep.key) : null}
+      />
+
       <div className="card-header">
         <div className="flex items-center space-x-2">
           <BookOpen className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Generation Progress</h2>
+          <h2 className="text-lg font-semibold text-gray-900">生成进度</h2>
         </div>
+        <p className="text-xs text-gray-500 mt-1">
+          点击已完成的步骤图标可查看详情
+        </p>
       </div>
 
       <div className="card-body">
@@ -133,19 +278,24 @@ function ProgressStream({ currentAgent, message, logs = [], isComplete, isError 
               const isActive = index === currentStepIndex && !isComplete && !isError;
               const isCompleted = index < currentStepIndex || isComplete;
               const isPending = index > currentStepIndex && !isComplete;
+              const isClickable = isCompleted || (isActive && !isError);
 
               return (
                 <div key={step.key} className="flex items-center flex-1">
                   {/* Step Circle */}
                   <div className="flex flex-col items-center">
-                    <div
+                    <button
+                      onClick={() => handleStepClick(step, index)}
+                      disabled={!isClickable}
                       className={clsx(
                         'flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300',
                         isActive && `${step.bgColor} ${step.color} agent-pulse`,
-                        isCompleted && 'bg-emerald-100 text-emerald-600',
-                        isPending && 'bg-gray-100 text-gray-400',
-                        isError && index === currentStepIndex && 'bg-red-100 text-red-600'
+                        isCompleted && 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 cursor-pointer',
+                        isPending && 'bg-gray-100 text-gray-400 cursor-not-allowed',
+                        isError && index === currentStepIndex && 'bg-red-100 text-red-600',
+                        isClickable && !isActive && 'hover:ring-2 hover:ring-offset-2 hover:ring-indigo-400'
                       )}
+                      title={isClickable ? `点击查看${step.nameCn}详情` : step.description}
                     >
                       {isActive && !isError ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -156,7 +306,7 @@ function ProgressStream({ currentAgent, message, logs = [], isComplete, isError 
                       ) : (
                         <Icon className="w-5 h-5" />
                       )}
-                    </div>
+                    </button>
                     <span
                       className={clsx(
                         'text-xs mt-2 font-medium text-center',
@@ -166,7 +316,7 @@ function ProgressStream({ currentAgent, message, logs = [], isComplete, isError 
                         isError && index === currentStepIndex && 'text-red-600'
                       )}
                     >
-                      {step.name}
+                      {step.nameCn}
                     </span>
                   </div>
 
@@ -216,7 +366,7 @@ function ProgressStream({ currentAgent, message, logs = [], isComplete, isError 
         {/* Log Window */}
         {logs.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Activity Log</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">活动日志</h3>
             <div
               ref={logContainerRef}
               className="bg-gray-900 rounded-lg p-4 h-48 overflow-y-auto scrollbar-thin font-mono text-sm"

@@ -8,6 +8,7 @@ import { authApi, setToken } from '../api/client';
  *
  * Per SRS Section 3.1: Token-based authentication only.
  * NO registration or forgot password links - this is a private system.
+ * Localized to Simplified Chinese.
  */
 function Login() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ function Login() {
     e.preventDefault();
 
     if (!formData.username || !formData.password) {
-      setError('Please enter username and password');
+      setError('请输入用户名和密码');
       return;
     }
 
@@ -40,7 +41,7 @@ function Login() {
       setToken(response.data.token);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      setError(err.response?.data?.detail || '登录失败，请检查用户名和密码');
     } finally {
       setLoading(false);
     }
@@ -62,8 +63,8 @@ function Login() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
               <PenTool className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">BiZhen</h1>
-            <p className="text-gray-500 mt-2">Gaokao Essay Generation System</p>
+            <h1 className="text-3xl font-bold text-gray-900">笔阵</h1>
+            <p className="text-gray-500 mt-2">高考作文智能生成系统</p>
           </div>
 
           {/* Error Message */}
@@ -78,7 +79,7 @@ function Login() {
             {/* Username Input */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                Username
+                用户名
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -91,7 +92,7 @@ function Login() {
                   value={formData.username}
                   onChange={handleChange}
                   className="input pl-10"
-                  placeholder="Enter your username"
+                  placeholder="请输入用户名"
                   autoComplete="username"
                 />
               </div>
@@ -100,7 +101,7 @@ function Login() {
             {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                密码
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -113,7 +114,7 @@ function Login() {
                   value={formData.password}
                   onChange={handleChange}
                   className="input pl-10"
-                  placeholder="Enter your password"
+                  placeholder="请输入密码"
                   autoComplete="current-password"
                 />
               </div>
@@ -128,17 +129,17 @@ function Login() {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Logging in...
+                  正在登录...
                 </>
               ) : (
-                'Login'
+                '登录'
               )}
             </button>
           </form>
 
           {/* Footer Note */}
           <p className="mt-8 text-center text-xs text-gray-400">
-            This is a private system. Contact your administrator for access.
+            本系统为内部使用，如需账号请联系管理员
           </p>
         </div>
       </div>

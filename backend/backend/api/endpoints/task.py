@@ -62,11 +62,17 @@ def create_task(
         TaskCreateResponse with task_id and initial status
     """
     # Create task record in database
+    # Store custom_structure in meta_info for later use by the worker
+    meta_info = {}
+    if request.custom_structure:
+        meta_info["custom_structure"] = request.custom_structure
+
     task = Task(
         user_id=current_user.id,
         input_prompt=request.prompt,
         image_url=request.image_url,
         status=TaskStatus.QUEUED,
+        meta_info=meta_info if meta_info else None,
     )
     db.add(task)
     db.commit()

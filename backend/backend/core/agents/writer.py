@@ -156,6 +156,7 @@ def writer_profound_node(state: EssayState) -> Dict[str, Any]:
     outline = state.get("outline", {})
     materials = state.get("materials", {})
     style_params = state.get("style_params", {}).get("profound", {})
+    custom_structure = state.get("custom_structure", "")  # FR-04: Custom constraints
 
     # Publish start event
     if task_id:
@@ -177,7 +178,11 @@ def writer_profound_node(state: EssayState) -> Dict[str, Any]:
         outline_text = format_outline_for_prompt(outline)
         materials_text = format_materials_for_prompt(materials)
 
+        # Build system prompt with custom structure if provided (FR-04)
         system_prompt = prompt_config.get("system_prompt", "")
+        if custom_structure:
+            system_prompt += f"\n\n【用户自定义结构约束 - 请务必优先遵循】\n{custom_structure}"
+
         user_prompt = format_prompt(
             prompt_config.get("template", ""),
             topic=topic,
@@ -247,6 +252,7 @@ def writer_rhetorical_node(state: EssayState) -> Dict[str, Any]:
     outline = state.get("outline", {})
     materials = state.get("materials", {})
     style_params = state.get("style_params", {}).get("rhetorical", {})
+    custom_structure = state.get("custom_structure", "")  # FR-04: Custom constraints
 
     # Publish start event
     if task_id:
@@ -268,7 +274,11 @@ def writer_rhetorical_node(state: EssayState) -> Dict[str, Any]:
         outline_text = format_outline_for_prompt(outline)
         materials_text = format_materials_for_prompt(materials)
 
+        # Build system prompt with custom structure if provided (FR-04)
         system_prompt = prompt_config.get("system_prompt", "")
+        if custom_structure:
+            system_prompt += f"\n\n【用户自定义结构约束 - 请务必优先遵循】\n{custom_structure}"
+
         user_prompt = format_prompt(
             prompt_config.get("template", ""),
             topic=topic,
@@ -337,6 +347,7 @@ def writer_steady_node(state: EssayState) -> Dict[str, Any]:
     outline = state.get("outline", {})
     materials = state.get("materials", {})
     style_params = state.get("style_params", {}).get("steady", {})
+    custom_structure = state.get("custom_structure", "")  # FR-04: Custom constraints
 
     # Publish start event
     if task_id:
@@ -358,7 +369,11 @@ def writer_steady_node(state: EssayState) -> Dict[str, Any]:
         outline_text = format_outline_for_prompt(outline)
         materials_text = format_materials_for_prompt(materials)
 
+        # Build system prompt with custom structure if provided (FR-04)
         system_prompt = prompt_config.get("system_prompt", "")
+        if custom_structure:
+            system_prompt += f"\n\n【用户自定义结构约束 - 请务必优先遵循】\n{custom_structure}"
+
         user_prompt = format_prompt(
             prompt_config.get("template", ""),
             topic=topic,
