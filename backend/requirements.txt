@@ -1,45 +1,18 @@
-# ============================================
-# BiZhen Backend Dependencies
-# ============================================
-
-# --- Web Framework ---
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-sse-starlette>=2.0.0          # Server-Sent Events support
-
-# --- Database ---
-sqlalchemy>=2.0.25
-psycopg2-binary>=2.9.9        # PostgreSQL adapter
-alembic>=1.13.0               # Database migrations
-
-# --- Validation & Serialization ---
-pydantic>=2.5.0
-pydantic-settings>=2.1.0      # Settings management
-python-multipart>=0.0.6       # Form data parsing
-
-# --- Authentication ---
-passlib[bcrypt]>=1.7.4        # Password hashing
-bcrypt==3.2.2
-python-jose[cryptography]>=3.3.0  # JWT tokens
-
-# --- Task Queue ---
-celery>=5.3.6
-redis>=5.0.1
-
-# --- AI/LLM Framework ---
-langgraph>=0.0.40
-langchain>=0.1.0
-langchain-openai>=0.0.5       # Generic OpenAI-compatible interface
-langchain-community>=0.0.13   # Community integrations
-
-# --- Vector Database ---
-chromadb>=0.4.22
-
-# --- Utilities ---
-pyyaml>=6.0.1                 # YAML prompt loading
-httpx>=0.26.0                 # Async HTTP client
-python-dotenv>=1.0.0          # Environment variable loading
-
-# --- Development ---
-pytest>=7.4.0
-pytest-asyncio>=0.23.0
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pydantic
+celery
+redis
+langgraph
+langchain
+langchain-openai
+python-multipart
+# Fix for passlib/bcrypt compatibility issue
+passlib
+bcrypt==4.0.1
+# Vector DB and others
+chromadb
+python-dotenv
+httpx
