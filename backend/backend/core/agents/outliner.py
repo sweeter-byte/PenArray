@@ -88,6 +88,7 @@ def outliner_node(state: EssayState) -> Dict[str, Any]:
                 event_type="progress",
                 agent="outliner",
                 message=f"大纲构思完成，采用{structure_type}结构",
+                data=outline,
             )
 
         return {

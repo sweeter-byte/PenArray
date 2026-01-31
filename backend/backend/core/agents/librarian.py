@@ -428,6 +428,7 @@ def librarian_node(state: EssayState) -> Dict[str, Any]:
                 task_id=task_id,
                 event_type="progress",
                 agent="librarian",
+
                 message="[Tier 1] 正在从本地素材库检索...",
             )
 
@@ -561,6 +562,7 @@ def librarian_node(state: EssayState) -> Dict[str, Any]:
                 event_type="progress",
                 agent="librarian",
                 message=f"素材检索完成，共找到 {total_materials} 条相关素材（来源：{source_summary}）",
+                data=materials,
             )
 
         return {

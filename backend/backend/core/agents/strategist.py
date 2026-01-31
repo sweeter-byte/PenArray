@@ -82,6 +82,7 @@ def strategist_node(state: EssayState) -> Dict[str, Any]:
                 event_type="progress",
                 agent="strategist",
                 message=f"审题完成，立意角度：{result.get('angle', '待定')}",
+                data=result,
             )
 
         return {

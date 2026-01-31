@@ -8,6 +8,7 @@ Allows users to download generated essays in standard document formats.
 import io
 from datetime import datetime
 from typing import Optional
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import StreamingResponse
@@ -143,7 +144,7 @@ def export_essay_docx(
         buffer,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers={
-            "Content-Disposition": f"attachment; filename*=UTF-8''{filename}"
+            "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}"
         }
     )
 
@@ -279,6 +280,6 @@ def export_essay_pdf(
         buffer,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f"attachment; filename*=UTF-8''{filename}"
+            "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}"
         }
     )
