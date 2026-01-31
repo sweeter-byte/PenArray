@@ -165,6 +165,46 @@ SECRET_KEY=your_super_secret_key_change_in_production
 ACCESS_TOKEN_EXPIRE_HOURS=24
 ```
 
+## Vector Database Management
+
+The Librarian agent uses ChromaDB for RAG (Retrieval-Augmented Generation) to retrieve quotes, facts, and examples. Two utility scripts are provided for managing the vector database:
+
+### Check Database Status
+
+```bash
+cd backend
+python check_vector_db.py
+```
+
+This script:
+- Connects to ChromaDB and reports connection status
+- Shows total document count in `materials_collection`
+- Displays category breakdown (quote, fact, theory, literature)
+- Shows sample documents if the collection is not empty
+
+### Seed Sample Data
+
+```bash
+cd backend
+python seed_vector_db.py          # Add new documents
+python seed_vector_db.py --clear  # Clear and reseed
+```
+
+This script seeds 12 high-quality Chinese materials covering:
+
+| Theme | Examples |
+|-------|----------|
+| **Perseverance (坚持)** | 荀子《劝学》, 屠呦呦青蒿素研发 |
+| **Innovation (创新)** | 朱熹《观书有感》, 华为5G专利 |
+| **Patriotism (爱国)** | 林则徐, 钱学森, 文天祥 |
+
+### Environment Variables
+
+Both scripts support:
+```bash
+CHROMA_HOST=chroma CHROMA_PORT=8000 python check_vector_db.py
+```
+
 ## API Reference
 
 ### Authentication
@@ -228,6 +268,8 @@ PenArray/
 │   │   ├── db/                 # Database models
 │   │   ├── schemas/            # Pydantic schemas
 │   │   └── prompts/            # YAML prompt templates
+│   ├── check_vector_db.py      # Vector DB status checker
+│   ├── seed_vector_db.py       # Vector DB seeding script
 │   ├── requirements.txt
 │   └── Dockerfile
 │
