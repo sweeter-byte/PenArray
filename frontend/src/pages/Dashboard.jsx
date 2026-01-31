@@ -76,11 +76,11 @@ function Dashboard() {
       const response = await taskApi.create(prompt, imageUrl);
       const task = response.data;
       setCurrentTask(task);
-      addLog('system', `Task created with ID: ${task.id}`);
+      addLog('system', `Task created with ID: ${task.task_id}`);
 
       // Start SSE stream
       setProgressMessage('Connecting to progress stream...');
-      const cleanup = taskApi.streamProgress(task.id, {
+      const cleanup = taskApi.streamProgress(task.task_id, {
         onMessage: (data) => {
           setCurrentAgent(data.agent);
           setProgressMessage(data.message || `${data.agent} is working...`);
@@ -93,7 +93,7 @@ function Dashboard() {
 
           // Fetch final results
           try {
-            const resultResponse = await taskApi.getResult(task.id);
+            const resultResponse = await taskApi.getResult(task.task_id);
             const result = resultResponse.data;
 
             // Transform drafts/scores/critiques into essay array
