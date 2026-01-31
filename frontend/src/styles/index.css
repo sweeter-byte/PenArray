@@ -1,104 +1,136 @@
-/* BiZhen Frontend Styles */
+/* TailwindCSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Custom Base Styles */
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+/* Custom Component Styles */
+@layer components {
+  /* Button variants */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-400;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  /* Input styles */
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200;
+  }
+
+  .input-error {
+    @apply input border-red-500 focus:ring-red-500;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-gray-100;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  /* Essay card styles with style-specific borders */
+  .essay-card {
+    @apply card overflow-hidden;
+  }
+
+  .essay-card-profound {
+    @apply essay-card border-t-4 border-t-profound-600;
+  }
+
+  .essay-card-rhetorical {
+    @apply essay-card border-t-4 border-t-rhetorical-600;
+  }
+
+  .essay-card-steady {
+    @apply essay-card border-t-4 border-t-steady-600;
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-profound {
+    @apply badge bg-profound-100 text-profound-700;
+  }
+
+  .badge-rhetorical {
+    @apply badge bg-rhetorical-100 text-rhetorical-700;
+  }
+
+  .badge-steady {
+    @apply badge bg-steady-100 text-steady-700;
+  }
+
+  /* Score badge */
+  .score-badge {
+    @apply inline-flex items-center justify-center w-12 h-12 rounded-full text-lg font-bold;
+  }
 }
 
-#root {
-  min-height: 100vh;
-}
+/* Custom Utilities */
+@layer utilities {
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600;
+  }
 
-/* Login Page */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
+  /* Scrollbar styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
 
-.login-card {
-  width: 400px;
-  padding: 40px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded;
+  }
 
-.login-title {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-}
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded hover:bg-gray-400;
+  }
 
-/* Dashboard */
-.dashboard-container {
-  min-height: 100vh;
-  padding: 24px;
-}
+  /* Animation for agent activity */
+  .agent-pulse {
+    animation: agent-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
+  @keyframes agent-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
 
-/* Essay Display - 3 Column Layout */
-.essay-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.essay-card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.essay-card.profound {
-  border-top: 4px solid #722ed1;
-}
-
-.essay-card.rhetorical {
-  border-top: 4px solid #13c2c2;
-}
-
-.essay-card.steady {
-  border-top: 4px solid #52c41a;
-}
-
-.essay-content {
-  white-space: pre-wrap;
-  line-height: 1.8;
-  font-size: 14px;
-}
-
-/* Progress Stepper */
-.progress-container {
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .essay-grid {
-    grid-template-columns: 1fr;
+  /* Essay content formatting */
+  .essay-content {
+    @apply whitespace-pre-wrap leading-relaxed text-gray-700;
   }
 }
