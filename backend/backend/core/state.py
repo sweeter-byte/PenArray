@@ -107,8 +107,8 @@ class EssayState(TypedDict, total=False):
     # Error tracking (appended, not overwritten)
     errors: Annotated[List[str], operator.add]
 
-    # Metadata for SSE streaming
-    current_agent: str
+    # Metadata for SSE streaming (Last-Write-Wins for parallel updates)
+    current_agent: Annotated[str, lambda old, new: new]
 
 
 # Style constants for type safety
