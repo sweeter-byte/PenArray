@@ -14,7 +14,7 @@ services:
   # 2. Backend API Service (FastAPI)
   backend:
     build: ./backend
-    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    command: bash /app/start.sh
     environment:
       - DB_URL=postgresql://bizhen_user:bizhen_pass@postgres:5432/bizhen
       - REDIS_URL=redis://redis:6379/0
@@ -26,6 +26,7 @@ services:
       - DEEPSEEK_API_BASE=${DEEPSEEK_API_BASE:-https://api.deepseek.com}
       - DEEPSEEK_CHAT_MODEL=${DEEPSEEK_CHAT_MODEL:-deepseek-chat}
       - DEEPSEEK_REASONER_MODEL=${DEEPSEEK_REASONER_MODEL:-deepseek-reasoner}
+      - SECRET_KEY=${SECRET_KEY:-bizhen-secret-key-change-in-production}
     ports:
       - "8000:8000"
     depends_on:
@@ -56,6 +57,7 @@ services:
       - DEEPSEEK_API_BASE=${DEEPSEEK_API_BASE:-https://api.deepseek.com}
       - DEEPSEEK_CHAT_MODEL=${DEEPSEEK_CHAT_MODEL:-deepseek-chat}
       - DEEPSEEK_REASONER_MODEL=${DEEPSEEK_REASONER_MODEL:-deepseek-reasoner}
+      - SECRET_KEY=${SECRET_KEY:-bizhen-secret-key-change-in-production}
     depends_on:
       postgres:
         condition: service_healthy

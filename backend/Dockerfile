@@ -44,6 +44,9 @@ ENV PYTHONPATH=/app:$PYTHONPATH
 # Copy application code
 COPY . .
 
+# Make startup script executable
+RUN chmod +x /app/start.sh
+
 # Expose API port
 EXPOSE 8000
 
