@@ -1,5 +1,12 @@
 # PenArray (笔阵)
 
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-latest-009688.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-FF6F00.svg)](https://langchain-ai.github.io/langgraph/)
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license)
+
 A Multi-Agent AI System for generating high-quality Chinese Gaokao (高考) argumentative essays.
 
 ## Overview
@@ -137,6 +144,62 @@ PenArray solves the problem of generic LLMs producing essays that lack argumenta
 | Redis | 6379 | Cache & message broker |
 | ChromaDB | 8001 | Vector database |
 
+## Development
+
+### Local Development (without Docker)
+
+For local development, you can run the backend and frontend separately.
+
+**Backend:**
+
+```bash
+cd backend
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set environment variables
+export DEEPSEEK_API_KEY=your_key_here
+export DB_URL=postgresql://user:pass@localhost:5432/bizhen
+export REDIS_URL=redis://localhost:6379/0
+export CHROMA_HOST=localhost
+export CHROMA_PORT=8001
+
+# Run the API server
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+
+# In a separate terminal, run the Celery worker
+celery -A backend.worker worker --loglevel=info
+```
+
+**Frontend:**
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Running Tests
+
+```bash
+# Backend tests
+cd backend
+pytest
+
+# Frontend tests
+cd frontend
+npm test
+```
+
 ## Configuration
 
 ### Environment Variables
@@ -229,7 +292,8 @@ Content-Type: application/json
 
 {
   "prompt": "Essay topic here...",
-  "image_url": "optional_image_url"
+  "image_url": "optional_image_url",
+  "custom_structure": "parallel|hierarchical|sequential (optional)"
 }
 
 # Get task result
@@ -240,6 +304,18 @@ GET /api/task/{task_id}/stream
 
 # Check task status
 GET /api/task/{task_id}/status
+```
+
+### Document Export
+
+```http
+# Download essay as Word document
+GET /api/export/{essay_id}/docx
+Authorization: Bearer <token>
+
+# Download essay as PDF
+GET /api/export/{essay_id}/pdf
+Authorization: Bearer <token>
 ```
 
 ## Project Structure
@@ -320,6 +396,60 @@ Detailed documentation is available in the `doc/` directory:
 - **SRS_BiZhen.md** - Software Requirements Specification
 - **HLD_BiZhen.md** - High-Level Design
 - **LLD_BiZhen.md** - Low-Level Design
+
+## Troubleshooting
+
+### Common Issues
+
+**1. DeepSeek API errors**
+```
+Error: Invalid API key or rate limit exceeded
+```
+- Verify your `DEEPSEEK_API_KEY` is correct in `.env`
+- Check your API quota at [DeepSeek Platform](https://platform.deepseek.com/)
+
+**2. ChromaDB connection failed**
+```
+Error: Could not connect to ChromaDB
+```
+- Ensure ChromaDB container is running: `docker-compose ps chroma`
+- Check if port 8001 is available
+- Verify `CHROMA_HOST` and `CHROMA_PORT` environment variables
+
+**3. SSE streaming not working**
+```
+Error: EventSource connection failed
+```
+- Ensure Redis is running: `docker-compose ps redis`
+- Check browser console for CORS errors
+- Verify the JWT token is valid and not expired
+
+**4. Database migration issues**
+```
+Error: Relation does not exist
+```
+- Run database initialization: `docker-compose exec backend python -c "from backend.db.init_db import init_db; init_db()"`
+- Or restart the backend container: `docker-compose restart backend`
+
+**5. Celery worker not processing tasks**
+```
+Tasks stuck in "queued" status
+```
+- Check worker logs: `docker-compose logs worker`
+- Ensure Redis is accessible from the worker container
+- Restart the worker: `docker-compose restart worker`
+
+### Logs
+
+```bash
+# View all logs
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f backend
+docker-compose logs -f worker
+docker-compose logs -f frontend
+```
 
 ## License
 
