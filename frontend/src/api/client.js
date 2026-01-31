@@ -87,7 +87,10 @@ export const taskApi = {
    * @returns {function} Cleanup function to close connection
    */
   streamProgress: (taskId, { onMessage, onComplete, onError }) => {
-    const url = `/api/task/${taskId}/stream`;
+    const token = localStorage.getItem('token');
+    const url = token
+      ? `/api/task/${taskId}/stream?token=${encodeURIComponent(token)}`
+      : `/api/task/${taskId}/stream`;
     const eventSource = new EventSource(url);
 
     eventSource.onmessage = (event) => {

@@ -9,12 +9,13 @@ import json
 import asyncio
 from typing import AsyncGenerator
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 import redis.asyncio as aioredis
 
 from backend.api.deps import get_db, get_current_user
+from backend.core.security import decode_access_token
 from backend.db.models import User, Task, EssayResult, TaskStatus
 from backend.schemas.task import (
     TaskCreateRequest,
@@ -171,8 +172,8 @@ def get_task_result(
 )
 async def stream_task_progress(
     task_id: int,
+    token: str = Query(..., description="JWT authentication token"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ) -> StreamingResponse:
     """
     Stream task progress via Server-Sent Events (SSE).
@@ -182,14 +183,36 @@ async def stream_task_progress(
     - Streams progress events to client in real-time
     - Closes connection on task completion or error
 
+    Note: Uses query parameter for token since EventSource API
+    does not support custom headers.
+
     Args:
         task_id: The task ID to stream progress for
+        token: JWT authentication token (query parameter)
         db: Database session
-        current_user: Authenticated user
 
     Returns:
         StreamingResponse with SSE content type
     """
+    # Manual token validation (EventSource doesn't support headers)
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    payload = decode_access_token(token)
+    if payload is None:
+        raise credentials_exception
+
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if user is None:
+        raise credentials_exception
+
     # Verify task exists and user has access
     task = db.query(Task).filter(Task.id == task_id).first()
 
@@ -199,7 +222,7 @@ async def stream_task_progress(
             detail=f"Task {task_id} not found",
         )
 
-    if task.user_id != current_user.id:
+    if task.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this task",
