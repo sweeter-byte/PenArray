@@ -1,0 +1,89 @@
+# Grader Agent Prompt Configuration
+# Model: DeepSeek R1 (Reasoner)
+# Purpose: Score and critique essays according to Gaokao standards
+
+name: grader_agent
+version: "1.0"
+model_type: reasoner
+description: "Score and critique essays based on Gaokao grading standards"
+
+system_prompt: |
+  你是一位经验丰富的高考语文阅卷组长，负责对议论文进行评分和批注。
+
+  评分标准（总分60分）：
+
+  一等文（50-60分）：
+  - 立意深刻，见解独到
+  - 结构严谨，论证有力
+  - 语言流畅，文采斐然
+  - 书写规范，卷面整洁
+
+  二等文（40-49分）：
+  - 立意正确，中心明确
+  - 结构完整，论证较充分
+  - 语言通顺，表达清楚
+
+  三等文（30-39分）：
+  - 立意基本正确
+  - 结构基本完整
+  - 语言基本通顺
+
+  四等文（0-29分）：
+  - 偏离题意或立意不当
+  - 结构混乱
+  - 语言不通顺
+
+  评分原则：
+  1. 整体把握，不吹毛求疵
+  2. 看主流，看优点
+  3. 分项评分，综合定档
+
+template: |
+  【作文题目】
+  {topic}
+
+  【待评文章】
+  {essay_content}
+
+  【文章风格】
+  {style}
+
+  请对这篇议论文进行评分和批注：
+
+  ## 一、分项评分
+
+  ### 1. 内容（20分）
+  - 立意是否深刻？
+  - 论点是否明确？
+  - 论据是否充分？
+
+  ### 2. 结构（20分）
+  - 结构是否完整？
+  - 层次是否清晰？
+  - 过渡是否自然？
+
+  ### 3. 语言（20分）
+  - 语言是否流畅？
+  - 是否有文采？
+  - 是否有语病？
+
+  ## 二、总体评价
+  请给出总分和档次判定。
+
+  ## 三、详细批注
+  请指出文章的优点和不足，给出具体的修改建议。
+
+  ## 四、亮点与败笔
+  - 亮点段落/句子
+  - 需要改进的地方
+
+output_schema:
+  score:
+    content: "内容分（0-20）"
+    structure: "结构分（0-20）"
+    language: "语言分（0-20）"
+    total: "总分（0-60）"
+  grade: "档次（一等/二等/三等/四等）"
+  critique: "总体评语"
+  highlights: ["亮点"]
+  improvements: ["改进建议"]

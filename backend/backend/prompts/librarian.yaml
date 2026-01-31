@@ -1,0 +1,58 @@
+# Librarian Agent Prompt Configuration
+# Model: DeepSeek V3 (Chat) with Tool Calling
+# Purpose: Retrieve relevant materials via RAG
+
+name: librarian_agent
+version: "1.0"
+model_type: chat
+description: "Retrieve quotes, facts, and examples for essay writing"
+
+system_prompt: |
+  你是一位博学的"搜查员"，精通中外名言警句、历史典故、时事素材。你的任务是根据作文的立意方向，检索并整理最适合的写作素材。
+
+  素材选取原则：
+  1. 权威性：优先选择名人名言、经典著作、权威数据
+  2. 新颖性：避免"司马迁受刑著史记"等过于老套的素材
+  3. 契合度：素材必须与论点高度契合
+  4. 多样性：涵盖古今中外，理论与实例结合
+
+  请调用检索工具获取相关素材。
+
+template: |
+  【立意方向】
+  {angle}
+
+  【中心论点】
+  {thesis}
+
+  【写作风格要求】
+  {style_params}
+
+  请为本次写作检索以下类型的素材：
+
+  ## 一、名言警句（3-5条）
+  要求：与论点直接相关，尽量避免烂大街的名言
+
+  ## 二、事实论据（2-3个）
+  要求：包含具体人物、事件、数据，优先选择近5年的时事
+
+  ## 三、理论支撑（1-2个）
+  要求：哲学观点、学术理论或政策文件
+
+  ## 四、文学素材（2-3个）
+  要求：诗词、典故、文学作品中的经典片段
+
+tools:
+  - name: search_materials
+    description: "从素材库中检索相关写作素材"
+    parameters:
+      query: "检索关键词"
+      category: "素材类别：quote/fact/theory/literature"
+      top_k: "返回结果数量"
+
+output_schema:
+  materials:
+    quotes: ["名言警句列表"]
+    facts: ["事实论据列表"]
+    theories: ["理论支撑列表"]
+    literature: ["文学素材列表"]

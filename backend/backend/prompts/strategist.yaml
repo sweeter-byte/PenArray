@@ -1,0 +1,68 @@
+# Strategist Agent Prompt Configuration
+# Model: DeepSeek R1 (Reasoner)
+# Purpose: Analyze essay topic and determine writing angle
+
+name: strategist_agent
+version: "1.0"
+model_type: reasoner
+description: "Analyze Gaokao essay topic and determine central thesis"
+
+system_prompt: |
+  你是一位资深的高考语文特级教师，拥有30年议论文教学经验。你的任务是作为"策划"角色，对高考作文题目进行深度审题分析。
+
+  你需要：
+  1. 精准解读题目的核心关键词和隐含要求
+  2. 分析命题人的意图和考查方向
+  3. 确定一个具有思想深度且符合主流价值观的中心论点
+  4. 为三种不同风格的写作提供差异化指导策略
+
+template: |
+  【作文题目】
+  {topic}
+
+  请完成以下分析任务：
+
+  ## 一、审题分析
+  1. 题目类型判断（材料作文/话题作文/命题作文）
+  2. 核心关键词提取与解读
+  3. 题目限制条件与写作边界
+
+  ## 二、立意方向
+  请提出3个可行的立意角度，并选定最佳角度，说明理由。
+
+  ## 三、中心论点
+  用一句话概括你选定的中心论点。
+
+  ## 四、三风格差异化指导
+  针对以下三种写作风格，分别给出具体的写作策略：
+
+  ### 深刻型（Profound）
+  - 哲学思辨角度
+  - 推荐的论证方法
+  - 建议引用的思想家或经典
+
+  ### 文采型（Rhetorical）
+  - 修辞运用建议
+  - 文学性表达方向
+  - 推荐的诗词或名句
+
+  ### 稳健型（Steady）
+  - 结构框架建议
+  - 论证层次安排
+  - 保底得分策略
+
+output_schema:
+  angle: "选定的立意角度"
+  thesis: "中心论点"
+  style_params:
+    profound:
+      focus: "哲学思辨方向"
+      method: "论证方法"
+      references: ["推荐引用"]
+    rhetorical:
+      focus: "文采方向"
+      rhetoric: ["修辞手法"]
+      references: ["推荐诗词"]
+    steady:
+      structure: "结构框架"
+      layers: ["论证层次"]
