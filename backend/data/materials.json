@@ -1,0 +1,335 @@
+{
+  "version": "1.0",
+  "description": "High-quality Chinese essay materials for BiZhen RAG system",
+  "last_updated": "2025-01-31",
+  "materials": [
+    {
+      "id": "quote_persistence_001",
+      "content": "锲而舍之，朽木不折；锲而不舍，金石可镂。——《荀子·劝学》",
+      "category": "quote",
+      "author": "荀子",
+      "tags": ["坚持", "毅力", "学习"],
+      "theme": "persistence"
+    },
+    {
+      "id": "quote_persistence_002",
+      "content": "故天将降大任于斯人也，必先苦其心志，劳其筋骨，饿其体肤，空乏其身。——《孟子·告子下》",
+      "category": "quote",
+      "author": "孟子",
+      "tags": ["坚持", "磨练", "成长"],
+      "theme": "persistence"
+    },
+    {
+      "id": "quote_persistence_003",
+      "content": "古之立大事者，不惟有超世之才，亦必有坚忍不拔之志。——苏轼《晁错论》",
+      "category": "quote",
+      "author": "苏轼",
+      "tags": ["坚持", "志向", "成功"],
+      "theme": "persistence"
+    },
+    {
+      "id": "fact_persistence_001",
+      "content": "屠呦呦历经190次失败，终于从青蒿中提取出青蒿素，挽救了数百万疟疾患者的生命，荣获2015年诺贝尔生理学或医学奖。",
+      "category": "fact",
+      "author": "",
+      "tags": ["坚持", "科学", "奉献"],
+      "theme": "persistence"
+    },
+    {
+      "id": "fact_persistence_002",
+      "content": "曹雪芹'批阅十载，增删五次'，穷尽毕生心血创作《红楼梦》，铸就中国古典小说的巅峰之作。",
+      "category": "fact",
+      "author": "",
+      "tags": ["坚持", "文学", "创作"],
+      "theme": "persistence"
+    },
+    {
+      "id": "quote_innovation_001",
+      "content": "苟日新，日日新，又日新。——《礼记·大学》",
+      "category": "quote",
+      "author": "礼记",
+      "tags": ["创新", "进步", "自我更新"],
+      "theme": "innovation"
+    },
+    {
+      "id": "quote_innovation_002",
+      "content": "问渠那得清如许？为有源头活水来。——朱熹《观书有感》",
+      "category": "quote",
+      "author": "朱熹",
+      "tags": ["创新", "学习", "活力"],
+      "theme": "innovation"
+    },
+    {
+      "id": "quote_innovation_003",
+      "content": "穷则变，变则通，通则久。——《周易·系辞下》",
+      "category": "quote",
+      "author": "周易",
+      "tags": ["创新", "变革", "发展"],
+      "theme": "innovation"
+    },
+    {
+      "id": "fact_innovation_001",
+      "content": "华为在5G技术领域拥有超过3000项核心专利，坚持每年将10%以上营收投入研发，成为全球5G技术的领导者。",
+      "category": "fact",
+      "author": "",
+      "tags": ["创新", "科技", "自主"],
+      "theme": "innovation"
+    },
+    {
+      "id": "fact_innovation_002",
+      "content": "中国高铁从引进、消化、吸收到自主创新，实现了从'跟跑者'到'领跑者'的华丽转身，运营里程超过4万公里，稳居世界第一。",
+      "category": "fact",
+      "author": "",
+      "tags": ["创新", "科技", "发展"],
+      "theme": "innovation"
+    },
+    {
+      "id": "theory_innovation_001",
+      "content": "习近平总书记强调：'创新是引领发展的第一动力，抓创新就是抓发展，谋创新就是谋未来。'",
+      "category": "theory",
+      "author": "习近平",
+      "tags": ["创新", "发展", "未来"],
+      "theme": "innovation"
+    },
+    {
+      "id": "quote_patriotism_001",
+      "content": "苟利国家生死以，岂因祸福避趋之。——林则徐",
+      "category": "quote",
+      "author": "林则徐",
+      "tags": ["爱国", "担当", "奉献"],
+      "theme": "patriotism"
+    },
+    {
+      "id": "quote_patriotism_002",
+      "content": "位卑未敢忘忧国，事定犹须待阖棺。——陆游《病起书怀》",
+      "category": "quote",
+      "author": "陆游",
+      "tags": ["爱国", "责任", "忧患"],
+      "theme": "patriotism"
+    },
+    {
+      "id": "quote_patriotism_003",
+      "content": "天下兴亡，匹夫有责。——顾炎武（梁启超改述）",
+      "category": "quote",
+      "author": "顾炎武",
+      "tags": ["爱国", "责任", "担当"],
+      "theme": "patriotism"
+    },
+    {
+      "id": "fact_patriotism_001",
+      "content": "钱学森放弃美国优厚待遇，冲破重重阻挠回到祖国，主持'两弹一星'研制工作，为中国国防事业做出不可磨灭的贡献。",
+      "category": "fact",
+      "author": "",
+      "tags": ["爱国", "奉献", "科学"],
+      "theme": "patriotism"
+    },
+    {
+      "id": "literature_patriotism_001",
+      "content": "人生自古谁无死？留取丹心照汗青。——文天祥《过零丁洋》",
+      "category": "literature",
+      "author": "文天祥",
+      "tags": ["爱国", "气节", "牺牲"],
+      "theme": "patriotism"
+    },
+    {
+      "id": "quote_technology_001",
+      "content": "科学技术是第一生产力。——邓小平",
+      "category": "quote",
+      "author": "邓小平",
+      "tags": ["科技", "发展", "生产力"],
+      "theme": "technology"
+    },
+    {
+      "id": "fact_technology_001",
+      "content": "中国'嫦娥五号'成功实现月球采样返回，带回1731克月球样品，标志着中国探月工程'绕、落、回'三步走战略圆满收官。",
+      "category": "fact",
+      "author": "",
+      "tags": ["科技", "航天", "探索"],
+      "theme": "technology"
+    },
+    {
+      "id": "fact_technology_002",
+      "content": "中国空间站'天宫'全面建成，成为继国际空间站后第二个在轨运行的大型空间站，展现了中国航天的强大实力。",
+      "category": "fact",
+      "author": "",
+      "tags": ["科技", "航天", "创新"],
+      "theme": "technology"
+    },
+    {
+      "id": "fact_technology_003",
+      "content": "ChatGPT等人工智能技术的快速发展，引发了全球对AI伦理、就业影响和人类未来的深入思考。",
+      "category": "fact",
+      "author": "",
+      "tags": ["科技", "人工智能", "未来"],
+      "theme": "technology"
+    },
+    {
+      "id": "quote_youth_001",
+      "content": "青年兴则国家兴，青年强则国家强。——习近平",
+      "category": "quote",
+      "author": "习近平",
+      "tags": ["青年", "责任", "担当"],
+      "theme": "youth"
+    },
+    {
+      "id": "quote_youth_002",
+      "content": "恰同学少年，风华正茂；书生意气，挥斥方遒。——毛泽东《沁园春·长沙》",
+      "category": "literature",
+      "author": "毛泽东",
+      "tags": ["青年", "理想", "奋斗"],
+      "theme": "youth"
+    },
+    {
+      "id": "literature_youth_001",
+      "content": "少年强则国强，少年智则国智，少年富则国富，少年独立则国独立。——梁启超《少年中国说》",
+      "category": "literature",
+      "author": "梁启超",
+      "tags": ["青年", "国家", "希望"],
+      "theme": "youth"
+    },
+    {
+      "id": "quote_learning_001",
+      "content": "学而不思则罔，思而不学则殆。——《论语·为政》",
+      "category": "quote",
+      "author": "孔子",
+      "tags": ["学习", "思考", "教育"],
+      "theme": "learning"
+    },
+    {
+      "id": "quote_learning_002",
+      "content": "博学之，审问之，慎思之，明辨之，笃行之。——《中庸》",
+      "category": "quote",
+      "author": "中庸",
+      "tags": ["学习", "实践", "方法"],
+      "theme": "learning"
+    },
+    {
+      "id": "quote_learning_003",
+      "content": "纸上得来终觉浅，绝知此事要躬行。——陆游《冬夜读书示子聿》",
+      "category": "quote",
+      "author": "陆游",
+      "tags": ["学习", "实践", "知行合一"],
+      "theme": "learning"
+    },
+    {
+      "id": "literature_nature_001",
+      "content": "采菊东篱下，悠然见南山。——陶渊明《饮酒·其五》",
+      "category": "literature",
+      "author": "陶渊明",
+      "tags": ["自然", "田园", "心境"],
+      "theme": "nature"
+    },
+    {
+      "id": "literature_nature_002",
+      "content": "绿水青山就是金山银山。——习近平",
+      "category": "theory",
+      "author": "习近平",
+      "tags": ["环保", "生态", "发展"],
+      "theme": "nature"
+    },
+    {
+      "id": "fact_environment_001",
+      "content": "中国承诺在2030年前实现碳达峰、2060年前实现碳中和，展现了负责任大国的担当。",
+      "category": "fact",
+      "author": "",
+      "tags": ["环保", "气候", "责任"],
+      "theme": "environment"
+    },
+    {
+      "id": "quote_integrity_001",
+      "content": "富贵不能淫，贫贱不能移，威武不能屈，此之谓大丈夫。——《孟子·滕文公下》",
+      "category": "quote",
+      "author": "孟子",
+      "tags": ["品德", "气节", "坚守"],
+      "theme": "integrity"
+    },
+    {
+      "id": "quote_integrity_002",
+      "content": "出淤泥而不染，濯清涟而不妖。——周敦颐《爱莲说》",
+      "category": "literature",
+      "author": "周敦颐",
+      "tags": ["品德", "高洁", "操守"],
+      "theme": "integrity"
+    },
+    {
+      "id": "literature_struggle_001",
+      "content": "路漫漫其修远兮，吾将上下而求索。——屈原《离骚》",
+      "category": "literature",
+      "author": "屈原",
+      "tags": ["奋斗", "追求", "理想"],
+      "theme": "struggle"
+    },
+    {
+      "id": "literature_struggle_002",
+      "content": "长风破浪会有时，直挂云帆济沧海。——李白《行路难》",
+      "category": "literature",
+      "author": "李白",
+      "tags": ["奋斗", "理想", "乐观"],
+      "theme": "struggle"
+    },
+    {
+      "id": "fact_struggle_001",
+      "content": "袁隆平院士毕生致力于杂交水稻研究，90岁高龄仍坚守田间，被誉为'杂交水稻之父'，让中国人的饭碗牢牢端在自己手中。",
+      "category": "fact",
+      "author": "",
+      "tags": ["奋斗", "奉献", "科学"],
+      "theme": "struggle"
+    },
+    {
+      "id": "fact_pandemic_001",
+      "content": "钟南山院士84岁高龄仍奔赴抗疫一线，展现了医者仁心和科学家的担当，成为抗击新冠疫情的'定海神针'。",
+      "category": "fact",
+      "author": "",
+      "tags": ["担当", "奉献", "医者"],
+      "theme": "responsibility"
+    },
+    {
+      "id": "theory_practice_001",
+      "content": "实践是检验真理的唯一标准。——马克思主义哲学",
+      "category": "theory",
+      "author": "马克思",
+      "tags": ["哲学", "实践", "真理"],
+      "theme": "philosophy"
+    },
+    {
+      "id": "quote_time_001",
+      "content": "盛年不重来，一日难再晨。及时当勉励，岁月不待人。——陶渊明《杂诗》",
+      "category": "literature",
+      "author": "陶渊明",
+      "tags": ["时间", "珍惜", "勤奋"],
+      "theme": "time"
+    },
+    {
+      "id": "quote_cooperation_001",
+      "content": "单丝不成线，独木不成林。——谚语",
+      "category": "quote",
+      "author": "谚语",
+      "tags": ["合作", "团结", "集体"],
+      "theme": "cooperation"
+    },
+    {
+      "id": "fact_cooperation_001",
+      "content": "中国脱贫攻坚战取得全面胜利，9899万农村贫困人口全部脱贫，创造了人类减贫史上的奇迹，彰显了集中力量办大事的制度优势。",
+      "category": "fact",
+      "author": "",
+      "tags": ["合作", "脱贫", "成就"],
+      "theme": "cooperation"
+    },
+    {
+      "id": "literature_optimism_001",
+      "content": "沉舟侧畔千帆过，病树前头万木春。——刘禹锡《酬乐天扬州初逢席上见赠》",
+      "category": "literature",
+      "author": "刘禹锡",
+      "tags": ["乐观", "发展", "希望"],
+      "theme": "optimism"
+    },
+    {
+      "id": "quote_optimism_001",
+      "content": "千淘万漉虽辛苦，吹尽狂沙始到金。——刘禹锡《浪淘沙》",
+      "category": "quote",
+      "author": "刘禹锡",
+      "tags": ["乐观", "坚持", "成功"],
+      "theme": "optimism"
+    }
+  ]
+}
