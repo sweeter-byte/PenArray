@@ -61,8 +61,12 @@ export const taskApi = {
   /**
    * Create a new essay generation task
    */
-  create: (prompt, imageUrl = null) =>
-    apiClient.post('/task/create', { prompt, image_url: imageUrl }),
+  create: (prompt, imageUrl = null, customStructure = null) =>
+    apiClient.post('/task/create', {
+      prompt,
+      image_url: imageUrl,
+      custom_structure: customStructure,
+    }),
 
   /**
    * Get task result with all essays
@@ -123,6 +127,65 @@ export const taskApi = {
     return () => eventSource.close();
   },
 };
+
+/**
+ * Export API
+ */
+export const exportApi = {
+  /**
+   * Download essay as Word document
+   */
+  downloadDocx: (essayId) => {
+    const token = localStorage.getItem('token');
+    const url = `/api/export/${essayId}/docx`;
+    return downloadFile(url, token);
+  },
+
+  /**
+   * Download essay as PDF document
+   */
+  downloadPdf: (essayId) => {
+    const token = localStorage.getItem('token');
+    const url = `/api/export/${essayId}/pdf`;
+    return downloadFile(url, token);
+  },
+};
+
+/**
+ * Helper function to download file with authentication
+ */
+async function downloadFile(url, token) {
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('下载失败');
+  }
+
+  // Get filename from Content-Disposition header
+  const contentDisposition = response.headers.get('Content-Disposition');
+  let filename = 'document';
+  if (contentDisposition) {
+    const matches = contentDisposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
+    if (matches && matches[1]) {
+      filename = decodeURIComponent(matches[1]);
+    }
+  }
+
+  // Create blob and download
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(downloadUrl);
+}
 
 /**
  * Check if user is authenticated

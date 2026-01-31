@@ -16,6 +16,7 @@ class TaskCreateRequest(BaseModel):
 
     Used for POST /api/task/create endpoint.
     Supports both text prompts and optional image URLs (for OCR).
+    Also supports custom structure constraints for advanced users.
     """
     prompt: str = Field(
         ...,
@@ -28,12 +29,18 @@ class TaskCreateRequest(BaseModel):
         max_length=255,
         description="Optional URL to topic image for OCR processing"
     )
+    custom_structure: Optional[str] = Field(
+        None,
+        max_length=1000,
+        description="Optional custom structure constraints for essay generation"
+    )
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "prompt": "阅读下面的材料，根据要求写作。'躺平'与'内卷'成为当代青年热议的话题...",
-                "image_url": None
+                "image_url": None,
+                "custom_structure": None
             }
         }
     }

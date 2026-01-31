@@ -59,6 +59,7 @@ class EssayState(TypedDict, total=False):
     Attributes:
         topic: Original essay prompt/topic from user input
         image_url: Optional URL to topic image (for OCR)
+        custom_structure: User-provided structure constraints (FR-04)
 
         angle: Writing angle determined by Strategist
         thesis: Central thesis statement
@@ -82,6 +83,7 @@ class EssayState(TypedDict, total=False):
     topic: str
     image_url: Optional[str]
     task_id: Optional[int]
+    custom_structure: Optional[str]  # FR-04: Custom structure constraints
 
     # Strategist outputs
     angle: str

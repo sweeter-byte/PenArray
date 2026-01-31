@@ -33,6 +33,9 @@ def parse_grader_response(response: str) -> Tuple[int, str]:
     """
     Parse grader response to extract score and critique.
 
+    Uses strict regex parsing to ensure score consistency between
+    the displayed badge and the text explanation.
+
     Args:
         response: Raw model response
 
@@ -42,46 +45,64 @@ def parse_grader_response(response: str) -> Tuple[int, str]:
     score = 0
     critique = response
 
-    lines = response.split("\n")
+    # Strict regex patterns for score extraction (FR-05 requirement)
+    # These patterns handle various markdown and plain text formats
+    score_patterns = [
+        # Pattern 1: **总分**: 57 or **总分**：57 (markdown bold)
+        r"\*\*总分\*\*[：:]\s*(\d+)",
+        # Pattern 2: **总分：** 57 or **总分:** 57 (bold with colon inside)
+        r"\*\*总分[：:]\*\*\s*(\d+)",
+        # Pattern 3: 总分：57 or 总分: 57 (plain text)
+        r"总分[：:]\s*(\d+)",
+        # Pattern 4: 总分 57分 or 总分57分
+        r"总分\s*(\d+)\s*分",
+        # Pattern 5: Total: 57 or Total：57
+        r"[Tt]otal[：:]\s*(\d+)",
+        # Pattern 6: 得分：57 or 得分: 57
+        r"得分[：:]\s*(\d+)",
+        # Pattern 7: 最终评分：57 or 最终得分：57
+        r"最终[得评]分[：:]\s*(\d+)",
+        # Pattern 8: 综合评分：57
+        r"综合评分[：:]\s*(\d+)",
+    ]
 
-    # Look for score patterns
-    for line in lines:
-        line = line.strip()
-
-        # Pattern: 总分：XX or 总分: XX or Total: XX
-        score_match = re.search(r"总分[：:]\s*(\d+)", line)
-        if score_match:
-            score = int(score_match.group(1))
-            continue
-
-        # Pattern: XX分 or XX/60
-        score_match = re.search(r"(\d+)\s*[分/]", line)
-        if score_match and not score:
-            potential_score = int(score_match.group(1))
+    # Try each pattern in order of specificity
+    for pattern in score_patterns:
+        match = re.search(pattern, response)
+        if match:
+            potential_score = int(match.group(1))
             if 0 <= potential_score <= 60:
                 score = potential_score
-
-    # Extract critique section
-    critique_markers = ["评语", "总体评价", "评分理由", "critique", "总评"]
-    for marker in critique_markers:
-        if marker in response.lower():
-            idx = response.lower().find(marker)
-            # Get content after the marker
-            after_marker = response[idx:]
-            # Find the actual content
-            lines_after = after_marker.split("\n")
-            critique_lines = []
-            for i, l in enumerate(lines_after):
-                if i > 0 and l.strip():  # Skip the marker line
-                    critique_lines.append(l.strip())
-                if len(critique_lines) > 10:
-                    break
-            if critique_lines:
-                critique = "\n".join(critique_lines)
                 break
 
-    # Validate score
-    if score < 0 or score > 60:
+    # Fallback: look for XX分 or XX/60 patterns if no score found
+    if score == 0:
+        lines = response.split("\n")
+        for line in lines:
+            line = line.strip()
+            # Pattern: XX分 or XX/60 (but not in context like "100字")
+            score_match = re.search(r"(?<![0-9])(\d{1,2})\s*[分/](?:60)?", line)
+            if score_match:
+                potential_score = int(score_match.group(1))
+                if 0 < potential_score <= 60:
+                    score = potential_score
+                    break
+
+    # Extract critique section - keep the full response as critique
+    # This ensures all feedback is preserved
+    critique = response
+
+    # Try to find specific critique sections for cleaner display
+    critique_markers = ["评语", "总体评价", "评分理由", "总评", "具体评价", "详细点评"]
+    for marker in critique_markers:
+        if marker in response:
+            idx = response.find(marker)
+            # Get content from the marker onwards
+            critique = response[idx:]
+            break
+
+    # Validate score - if still 0 or invalid, use a conservative default
+    if score <= 0 or score > 60:
         score = 45  # Default reasonable score
 
     return score, critique

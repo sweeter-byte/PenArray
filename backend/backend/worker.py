@@ -113,12 +113,18 @@ def run_generation_task(self, task_id: int) -> Dict[str, Any]:
         # Import graph here to avoid circular imports
         from backend.core.graph import run_workflow
 
+        # Extract custom_structure from meta_info if present
+        custom_structure = None
+        if task.meta_info and isinstance(task.meta_info, dict):
+            custom_structure = task.meta_info.get("custom_structure")
+
         # Execute LangGraph workflow
         # The workflow will publish SSE events internally via agents
         final_state = run_workflow(
             topic=task.input_prompt,
             task_id=task_id,
             image_url=task.image_url,
+            custom_structure=custom_structure,
         )
 
         # Extract results from final state

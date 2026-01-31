@@ -130,6 +130,7 @@ def run_workflow(
     topic: str,
     task_id: int = None,
     image_url: str = None,
+    custom_structure: str = None,
 ) -> Dict[str, Any]:
     """
     Execute the complete essay generation workflow.
@@ -138,6 +139,7 @@ def run_workflow(
         topic: Essay topic/prompt text
         task_id: Optional database task ID for SSE events
         image_url: Optional image URL for OCR (future)
+        custom_structure: Optional user-defined structure constraints (FR-04)
 
     Returns:
         Final state dictionary with all generation results
@@ -147,6 +149,7 @@ def run_workflow(
         "topic": topic,
         "task_id": task_id,
         "image_url": image_url,
+        "custom_structure": custom_structure,  # FR-04: Pass to writers
         # Initialize empty containers for merge_dicts reducer
         "drafts": {},
         "titles": {},
