@@ -70,7 +70,7 @@ PenArray solves the problem of generic LLMs producing essays that lack argumenta
 | Agent | Model | Role |
 |-------|-------|------|
 | **Strategist** | DeepSeek R1 | Analyzes topic, determines writing angle and thesis |
-| **Librarian** | DeepSeek V3 | Retrieves quotes, facts, and examples via RAG |
+| **Librarian** | DeepSeek V3 | Retrieves materials via tiered RAG (Local DB → LLM → Web) |
 | **Outliner** | DeepSeek R1 | Creates structured essay outline |
 | **WriterProfound** | DeepSeek R1 | Philosophical depth, complex reasoning |
 | **WriterRhetorical** | DeepSeek V3 | Beautiful prose, literary devices |
@@ -253,19 +253,124 @@ python seed_vector_db.py          # Add new documents
 python seed_vector_db.py --clear  # Clear and reseed
 ```
 
-This script seeds 12 high-quality Chinese materials covering:
+Materials are loaded from `backend/data/materials.json`, which contains **41 high-quality Chinese essay materials** covering:
 
-| Theme | Examples |
-|-------|----------|
-| **Perseverance (坚持)** | 荀子《劝学》, 屠呦呦青蒿素研发 |
-| **Innovation (创新)** | 朱熹《观书有感》, 华为5G专利 |
-| **Patriotism (爱国)** | 林则徐, 钱学森, 文天祥 |
+| Theme | Count | Examples |
+|-------|-------|----------|
+| **Perseverance (坚持)** | 5 | 荀子《劝学》, 屠呦呦青蒿素研发, 曹雪芹《红楼梦》 |
+| **Innovation (创新)** | 6 | 朱熹《观书有感》, 华为5G专利, 中国高铁 |
+| **Patriotism (爱国)** | 5 | 林则徐, 钱学森, 文天祥《过零丁洋》 |
+| **Technology (科技)** | 4 | 嫦娥五号, 天宫空间站, 人工智能 |
+| **Youth (青年)** | 3 | 梁启超《少年中国说》, 毛泽东诗词 |
+| **Learning (学习)** | 3 | 孔子《论语》, 《中庸》, 陆游 |
+| **Other themes** | 15 | Environment, integrity, struggle, optimism, etc. |
+
+**Categories:** quotes (17), facts (12), literature (9), theories (3)
+
+### Adding Custom Materials
+
+Edit `backend/data/materials.json` to add your own materials:
+
+```json
+{
+  "materials": [
+    {
+      "id": "quote_custom_001",
+      "content": "Your quote content here.——Author",
+      "category": "quote",
+      "author": "Author Name",
+      "tags": ["tag1", "tag2"],
+      "theme": "your_theme"
+    }
+  ]
+}
+```
 
 ### Environment Variables
 
 Both scripts support:
 ```bash
 CHROMA_HOST=chroma CHROMA_PORT=8000 python check_vector_db.py
+```
+
+## Tiered Retrieval Strategy
+
+The Librarian agent implements a robust hybrid retrieval strategy to ensure high-quality materials are always available, even with a sparse local database:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Tiered Retrieval Flow                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ TIER 1: Vector DB Search (Preferred)                  │   │
+│  │ • Query ChromaDB for relevant materials               │   │
+│  │ • Goal: Retrieve at least 5 items                     │   │
+│  │ • Source: "vector_db"                                 │   │
+│  └────────────────────────┬─────────────────────────────┘   │
+│                           │                                  │
+│                    if count < 5                              │
+│                           ▼                                  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ TIER 2: LLM Generation (Fallback)                     │   │
+│  │ • Uses DeepSeek V3 to generate supplementary quotes   │   │
+│  │ • Avoids duplicating existing materials               │   │
+│  │ • Source: "llm_generated"                             │   │
+│  └────────────────────────┬─────────────────────────────┘   │
+│                           │                                  │
+│                    if count < 3                              │
+│                           ▼                                  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ TIER 3: Web Search (Last Resort)                      │   │
+│  │ • Tavily API (if TAVILY_API_KEY set)                  │   │
+│  │ • SerpAPI (if SERPAPI_API_KEY set)                    │   │
+│  │ • DuckDuckGo (no API key required)                    │   │
+│  │ • Source: "web_search_*"                              │   │
+│  └────────────────────────┬─────────────────────────────┘   │
+│                           │                                  │
+│                    if still < 3                              │
+│                           ▼                                  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ FALLBACK: Hardcoded Materials (Emergency)             │   │
+│  │ • Classic quotes that always work                     │   │
+│  │ • Ensures system never returns empty                  │   │
+│  │ • Source: "fallback"                                  │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Configuration
+
+To enable web search (Tier 3), set one of these environment variables:
+
+```bash
+# Tavily (recommended for quality)
+TAVILY_API_KEY=your_tavily_key
+
+# Or SerpAPI
+SERPAPI_API_KEY=your_serpapi_key
+
+# DuckDuckGo works without any API key (fallback)
+```
+
+### Retrieval Metadata
+
+Each response includes metadata about material sources:
+
+```json
+{
+  "materials": { ... },
+  "retrieval_metadata": {
+    "total": 12,
+    "sources": {
+      "vector_db": 8,
+      "llm_generated": 4,
+      "web_search": 0,
+      "fallback": 0
+    }
+  }
+}
 ```
 
 ## API Reference
@@ -344,6 +449,8 @@ PenArray/
 │   │   ├── db/                 # Database models
 │   │   ├── schemas/            # Pydantic schemas
 │   │   └── prompts/            # YAML prompt templates
+│   ├── data/
+│   │   └── materials.json      # Essay materials database (41 items)
 │   ├── check_vector_db.py      # Vector DB status checker
 │   ├── seed_vector_db.py       # Vector DB seeding script
 │   ├── requirements.txt
@@ -372,7 +479,7 @@ User Input (Topic)
        ↓
     LangGraph Execution
     ├── Strategist → Analyzes topic
-    ├── Librarian → Retrieves materials
+    ├── Librarian → Retrieves materials (Tiered: DB → LLM → Web)
     ├── Outliner → Creates outline
     ├── Writers (Parallel)
     │   ├── WriterProfound

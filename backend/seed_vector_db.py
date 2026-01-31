@@ -8,114 +8,73 @@ the RAG pipeline (Librarian agent).
 
 Usage:
     python seed_vector_db.py
+    python seed_vector_db.py --clear  # Clear and reseed
 
 Environment Variables:
     CHROMA_HOST: ChromaDB host (default: localhost)
     CHROMA_PORT: ChromaDB port (default: 8000)
 
-Themes covered:
-    - Perseverance (坚持/毅力)
-    - Innovation (创新)
-    - Patriotism (爱国)
+Data Source:
+    backend/data/materials.json - JSON file containing essay materials
 """
 
+import json
 import os
 import sys
+from pathlib import Path
 from typing import List, Dict, Any
 
 
-# Sample high-quality materials for Gaokao essays
-SAMPLE_MATERIALS: List[Dict[str, Any]] = [
-    # ========== Perseverance (坚持/毅力) ==========
-    {
-        "id": "quote_perseverance_001",
-        "content": "锲而舍之，朽木不折；锲而不舍，金石可镂。——《荀子·劝学》",
-        "category": "quote",
-        "author": "荀子",
-        "tags": ["坚持", "毅力", "学习"],
-    },
-    {
-        "id": "quote_perseverance_002",
-        "content": "故天将降大任于斯人也，必先苦其心志，劳其筋骨，饿其体肤。——《孟子》",
-        "category": "quote",
-        "author": "孟子",
-        "tags": ["坚持", "磨练", "成长"],
-    },
-    {
-        "id": "fact_perseverance_001",
-        "content": "屠呦呦历经190次失败，终于从青蒿中提取出青蒿素，挽救了数百万疟疾患者的生命，荣获2015年诺贝尔生理学或医学奖。",
-        "category": "fact",
-        "author": "",
-        "tags": ["坚持", "科学", "奉献"],
-    },
-    {
-        "id": "fact_perseverance_002",
-        "content": "曹雪芹'批阅十载，增删五次'，穷尽毕生心血创作《红楼梦》，铸就中国古典小说的巅峰之作。",
-        "category": "fact",
-        "author": "",
-        "tags": ["坚持", "文学", "创作"],
-    },
+def load_materials_from_json() -> List[Dict[str, Any]]:
+    """
+    Load materials from the JSON data file.
 
-    # ========== Innovation (创新) ==========
-    {
-        "id": "quote_innovation_001",
-        "content": "苟日新，日日新，又日新。——《礼记·大学》",
-        "category": "quote",
-        "author": "礼记",
-        "tags": ["创新", "进步", "自我更新"],
-    },
-    {
-        "id": "quote_innovation_002",
-        "content": "问渠那得清如许？为有源头活水来。——朱熹《观书有感》",
-        "category": "quote",
-        "author": "朱熹",
-        "tags": ["创新", "学习", "活力"],
-    },
-    {
-        "id": "fact_innovation_001",
-        "content": "华为在5G技术领域拥有超过3000项核心专利，坚持每年将10%以上营收投入研发，成为全球5G技术的领导者。",
-        "category": "fact",
-        "author": "",
-        "tags": ["创新", "科技", "自主"],
-    },
-    {
-        "id": "theory_innovation_001",
-        "content": "习近平总书记强调：'创新是引领发展的第一动力，抓创新就是抓发展，谋创新就是谋未来。'",
-        "category": "theory",
-        "author": "习近平",
-        "tags": ["创新", "发展", "未来"],
-    },
+    Returns:
+        List of material dictionaries
 
-    # ========== Patriotism (爱国) ==========
-    {
-        "id": "quote_patriotism_001",
-        "content": "苟利国家生死以，岂因祸福避趋之。——林则徐",
-        "category": "quote",
-        "author": "林则徐",
-        "tags": ["爱国", "担当", "奉献"],
-    },
-    {
-        "id": "quote_patriotism_002",
-        "content": "位卑未敢忘忧国，事定犹须待阖棺。——陆游《病起书怀》",
-        "category": "quote",
-        "author": "陆游",
-        "tags": ["爱国", "责任", "忧患"],
-    },
-    {
-        "id": "fact_patriotism_001",
-        "content": "钱学森放弃美国优厚待遇，冲破重重阻挠回到祖国，主持'两弹一星'研制工作，为中国国防事业做出不可磨灭的贡献。",
-        "category": "fact",
-        "author": "",
-        "tags": ["爱国", "奉献", "科学"],
-    },
-    {
-        "id": "literature_patriotism_001",
-        "content": "人生自古谁无死？留取丹心照汗青。——文天祥《过零丁洋》",
-        "category": "literature",
-        "author": "文天祥",
-        "tags": ["爱国", "气节", "牺牲"],
-    },
-]
+    Raises:
+        FileNotFoundError: If materials.json doesn't exist
+        json.JSONDecodeError: If JSON is invalid
+    """
+    # Get the path to materials.json relative to this script
+    script_dir = Path(__file__).parent
+    json_path = script_dir / "data" / "materials.json"
+
+    if not json_path.exists():
+        print(f"Error: Materials file not found at {json_path}")
+        print("Please create backend/data/materials.json with essay materials.")
+        sys.exit(1)
+
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        materials = data.get("materials", [])
+        print(f"Loaded {len(materials)} materials from {json_path}")
+
+        # Show theme breakdown
+        themes = {}
+        for m in materials:
+            theme = m.get("theme", "unknown")
+            themes[theme] = themes.get(theme, 0) + 1
+
+        print("Theme distribution:")
+        for theme, count in sorted(themes.items()):
+            print(f"  - {theme}: {count}")
+
+        return materials
+
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in {json_path}: {e}")
+        sys.exit(1)
+    except UnicodeDecodeError as e:
+        print(f"Error: Unicode encoding issue in {json_path}: {e}")
+        print("Ensure the file is saved with UTF-8 encoding.")
+        sys.exit(1)
+
+
+# Load materials from JSON file
+SAMPLE_MATERIALS: List[Dict[str, Any]] = []
 
 
 def get_chroma_settings():
@@ -126,16 +85,20 @@ def get_chroma_settings():
     }
 
 
-def seed_vector_database(clear_existing: bool = False):
+def seed_vector_database(clear_existing: bool = False, materials: List[Dict[str, Any]] = None):
     """
     Seed the ChromaDB materials_collection with sample materials.
 
     Args:
         clear_existing: If True, delete existing collection before seeding
+        materials: List of material dictionaries to seed (loaded from JSON)
 
     Returns:
         dict: Statistics about the seeding operation
     """
+    if materials is None:
+        materials = load_materials_from_json()
+
     try:
         import chromadb
     except ImportError:
@@ -144,7 +107,7 @@ def seed_vector_database(clear_existing: bool = False):
         sys.exit(1)
 
     settings = get_chroma_settings()
-    print(f"Connecting to ChromaDB at {settings['host']}:{settings['port']}...")
+    print(f"\nConnecting to ChromaDB at {settings['host']}:{settings['port']}...")
 
     try:
         client = chromadb.HttpClient(
@@ -173,7 +136,7 @@ def seed_vector_database(clear_existing: bool = False):
         documents = []
         metadatas = []
 
-        for material in SAMPLE_MATERIALS:
+        for material in materials:
             # Check if document already exists
             try:
                 existing = collection.get(ids=[material["id"]])
@@ -186,9 +149,10 @@ def seed_vector_database(clear_existing: bool = False):
             ids.append(material["id"])
             documents.append(material["content"])
             metadatas.append({
-                "category": material["category"],
-                "author": material["author"],
-                "tags": ",".join(material["tags"]),  # Store as comma-separated string
+                "category": material.get("category", "unknown"),
+                "author": material.get("author", ""),
+                "tags": ",".join(material.get("tags", [])),  # Store as comma-separated string
+                "theme": material.get("theme", ""),  # Include theme for filtering
             })
 
         if not ids:
@@ -277,8 +241,10 @@ if __name__ == "__main__":
 
     print("BiZhen Vector Database Seeding")
     print("=" * 50)
-    print(f"Materials to seed: {len(SAMPLE_MATERIALS)}")
-    print("Themes: Perseverance, Innovation, Patriotism")
-    print("=" * 50 + "\n")
 
-    seed_vector_database(clear_existing=args.clear)
+    # Load materials from JSON file
+    materials = load_materials_from_json()
+
+    print("=" * 50)
+
+    seed_vector_database(clear_existing=args.clear, materials=materials)
