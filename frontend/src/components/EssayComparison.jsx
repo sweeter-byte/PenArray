@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BookOpen, Star, MessageSquare, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import clsx from 'clsx';
+import ReactMarkdown from 'react-markdown';
 
 /**
  * Style configuration for essay cards
@@ -124,7 +125,11 @@ function EssayCard({ essay, isBestScore }) {
       {isExpanded && (
         <div className="p-5">
           <div className="essay-content text-sm leading-7 max-h-96 overflow-y-auto scrollbar-thin">
-            {essay.content}
+            <ReactMarkdown
+              className="prose prose-sm max-w-none prose-p:my-2 prose-headings:font-bold prose-headings:text-gray-900 prose-ul:list-disc prose-ul:pl-4"
+            >
+              {essay.content}
+            </ReactMarkdown>
           </div>
 
           {/* Word Count */}

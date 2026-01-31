@@ -15,7 +15,8 @@
     "react-router-dom": "^6.21.0",
     "axios": "^1.6.0",
     "clsx": "^2.1.0",
-    "lucide-react": "^0.312.0"
+    "lucide-react": "^0.312.0",
+    "react-markdown": "^9.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

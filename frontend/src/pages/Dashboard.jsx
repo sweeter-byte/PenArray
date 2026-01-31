@@ -96,25 +96,29 @@ function Dashboard() {
             const resultResponse = await taskApi.getResult(task.task_id);
             const result = resultResponse.data;
 
-            // Transform drafts/scores/critiques into essay array
-            const essayList = [];
-            const styles = ['profound', 'rhetorical', 'steady'];
+            // Transform API response essays array
+            if (result.essays && Array.isArray(result.essays)) {
+              setEssays(result.essays);
+            } else {
+              // Fallback for legacy format if needed
+              const essayList = [];
+              const styles = ['profound', 'rhetorical', 'steady'];
 
-            for (const style of styles) {
-              const draft = result.drafts?.[style];
-              if (draft) {
-                essayList.push({
-                  id: style,
-                  style: style,
-                  content: draft,
-                  score: result.scores?.[style] ?? null,
-                  critique: result.critiques?.[style] ?? null,
-                  title: style.charAt(0).toUpperCase() + style.slice(1) + ' Essay',
-                });
+              for (const style of styles) {
+                const draft = result.drafts?.[style];
+                if (draft) {
+                  essayList.push({
+                    id: style,
+                    style: style,
+                    content: draft,
+                    score: result.scores?.[style] ?? null,
+                    critique: result.critiques?.[style] ?? null,
+                    title: style.charAt(0).toUpperCase() + style.slice(1) + ' Essay',
+                  });
+                }
               }
+              setEssays(essayList);
             }
-
-            setEssays(essayList);
             setIsLoading(false);
           } catch (err) {
             addLog('system', 'Failed to fetch final results', 'error');

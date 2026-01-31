@@ -39,7 +39,7 @@ celery_app.conf.update(
     timezone="Asia/Shanghai",
     enable_utc=True,
     task_track_started=True,
-    task_time_limit=600,  # 10 minutes max per task
+    task_time_limit=1800,  # 30 minutes max per task
     worker_prefetch_multiplier=1,  # Process one task at a time for LLM efficiency
 )
 

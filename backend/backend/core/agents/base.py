@@ -18,6 +18,17 @@ import json
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 import redis
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+    before_sleep_log,
+)
+import logging
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 from backend.config import settings
 
@@ -90,6 +101,8 @@ def get_reasoner_model() -> ChatOpenAI:
         openai_api_base=settings.deepseek_api_base,
         temperature=0.7,
         max_tokens=4096,
+        max_retries=3,
+        timeout=600.0,
     )
 
 
@@ -111,6 +124,8 @@ def get_chat_model() -> ChatOpenAI:
         openai_api_base=settings.deepseek_api_base,
         temperature=0.8,
         max_tokens=4096,
+        max_retries=3,
+        timeout=600.0,
     )
 
 
@@ -155,6 +170,13 @@ def format_prompt(template: str, **kwargs: Any) -> str:
         return template
 
 
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    retry=retry_if_exception_type(Exception),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True
+)
 def invoke_model(
     model: ChatOpenAI,
     system_prompt: str,
@@ -162,14 +184,9 @@ def invoke_model(
 ) -> str:
     """
     Invoke a model with system and user prompts.
-
-    Args:
-        model: ChatOpenAI model instance
-        system_prompt: System message content
-        user_prompt: User message content
-
-    Returns:
-        Model response content as string
+    
+    Wrapped with Tenacity for robust retries against transient connection errors.
+    Retries 5 times with exponential backoff (4s to 10s).
     """
     messages = [
         SystemMessage(content=system_prompt),
