@@ -11,12 +11,14 @@ A Multi-Agent AI System for generating high-quality Chinese Gaokao (高考) argu
 
 ## Overview
 
-PenArray solves the problem of generic LLMs producing essays that lack argumentative depth, have poor logical structure, use outdated materials, and don't meet Gaokao evaluation standards. It orchestrates **7 specialized AI agents** to collaboratively generate, evaluate, and refine essays in three distinct writing styles.
+PenArray solves the problem of generic LLMs producing essays that lack argumentative depth, have poor logical structure, use outdated materials, and don't meet Gaokao evaluation standards. It orchestrates **9 specialized AI agents** to collaboratively generate, evaluate, revise, and refine essays in three distinct writing styles.
 
 **Key Highlights:**
 - Focused exclusively on argumentative essays (议论文)
 - Uses China-compliant LLM APIs (DeepSeek)
 - Generates 3 different writing styles from the same topic
+- **Closed-Loop Revision System**: Self-correcting essays with quality control
+- **Strict Word Count Enforcement**: Programmatic 850-1050 character validation
 - Includes scoring (0-60 points) and detailed critique following Gaokao standards
 - Real-time progress streaming via SSE
 
@@ -49,6 +51,15 @@ PenArray solves the problem of generic LLMs producing essays that lack argumenta
 │                                  │  ┌─────────┬─────────┬─────┐ │   │
 │                                  │  │ Grader  │ Grader  │Grader│ │   │
 │                                  │  └────┬────┴────┬────┴──┬───┘ │   │
+│                                  │       ↓         ↓       ↓     │   │
+│                                  │  ┌─────────┬─────────┬─────┐ │   │
+│                                  │  │Reviser  │Reviser  │Reviser│   │
+│                                  │  └────┬────┴────┬────┴──┬───┘ │   │
+│                                  │       ↓         ↓       ↓     │   │
+│                                  │  ┌─────────┬─────────┬─────┐ │   │
+│                                  │  │Reviewer │Reviewer │Reviewer│  │
+│                                  │  │ (Router)│ (Router)│(Router)│  │
+│                                  │  └────┬────┴────┬────┴──┬───┘ │   │
 │                                  │       └─────────┼───────┘     │   │
 │                                  │                 ↓             │   │
 │                                  │            Aggregator         │   │
@@ -76,12 +87,55 @@ PenArray solves the problem of generic LLMs producing essays that lack argumenta
 | **WriterRhetorical** | DeepSeek V3 | Beautiful prose, literary devices |
 | **WriterSteady** | DeepSeek V3 | Conservative structure, guaranteed minimum score |
 | **Grader** | DeepSeek R1 | Scores (0-60) and critiques each essay |
+| **Reviser** | DeepSeek R1 | Professional editor, applies feedback, enforces word count |
+| **Reviewer** | DeepSeek R1 | Quality assurance, routing decisions (ACCEPT/REVISE/REWRITE) |
 
 ### Three Essay Styles
 
 - **Profound (深刻)** - Philosophical depth, complex reasoning
 - **Rhetorical (文采)** - Beautiful prose, literary devices
 - **Steady (稳健)** - Conservative structure, guaranteed minimum score
+
+### Closed-Loop Revision System
+
+The revision system transforms the linear workflow into a self-correcting cycle:
+
+```
+Writer → Grader → Reviser → Reviewer → (Router)
+                     ↑                    │
+                     │    REVISE          │
+                     └────────────────────┤
+                                          │
+Writer ←──────────── REWRITE ─────────────┤
+                                          │
+Aggregator ←─────── ACCEPT ───────────────┘
+```
+
+**Router Logic (Reviewer Decision):**
+
+| Decision | Condition | Action |
+|----------|-----------|--------|
+| **ACCEPT** | Quality standards met | Proceed to Aggregator |
+| **REVISE** | Minor issues (style, wording, small logic gaps) | Loop back to Reviser |
+| **REWRITE** | Major failure (off-topic, severe hallucinations) | Loop back to Writer |
+
+**Word Count Enforcement:**
+
+The Reviser implements programmatic word count validation (not LLM estimation):
+
+```python
+# Self-correction loop inside Reviser node
+1. Generate revision
+2. count = count_chinese_chars(essay)  # Programmatic counting
+3. if 850 <= count <= 1050: PASS
+   if 1050 < count <= 1100: TOLERATE (pass)
+   if count > 1100 or count < 850: FAIL → retry with stronger prompt
+4. Max 2 retries for word count adjustment
+```
+
+**Safety Valve:**
+- Maximum 3 revision loops per style
+- After 3 iterations, force ACCEPT with warning to prevent infinite loops
 
 ### Technical Features
 
@@ -442,13 +496,25 @@ PenArray/
 │   │   ├── worker.py           # Celery worker
 │   │   ├── config.py           # Settings
 │   │   ├── core/
-│   │   │   ├── graph.py        # LangGraph workflow
-│   │   │   ├── state.py        # State management
+│   │   │   ├── graph.py        # LangGraph workflow (with revision loop)
+│   │   │   ├── state.py        # State management (revision fields)
 │   │   │   └── agents/         # Agent implementations
+│   │   │       ├── strategist.py
+│   │   │       ├── librarian.py
+│   │   │       ├── outliner.py
+│   │   │       ├── writer.py
+│   │   │       ├── grader.py
+│   │   │       ├── reviser.py  # NEW: Revision agent
+│   │   │       ├── reviewer.py # NEW: QA/routing agent
+│   │   │       └── aggregator.py
 │   │   ├── api/                # REST endpoints
 │   │   ├── db/                 # Database models
 │   │   ├── schemas/            # Pydantic schemas
+│   │   ├── utils/              # NEW: Utility functions
+│   │   │   └── text_tools.py   # Word count helpers
 │   │   └── prompts/            # YAML prompt templates
+│   │       ├── reviser.yaml    # NEW: Reviser prompts
+│   │       └── reviewer.yaml   # NEW: Reviewer prompts
 │   ├── data/
 │   │   └── materials.json      # Essay materials database (41 items)
 │   ├── check_vector_db.py      # Vector DB status checker
@@ -481,15 +547,32 @@ User Input (Topic)
     ├── Strategist → Analyzes topic
     ├── Librarian → Retrieves materials (Tiered: DB → LLM → Web)
     ├── Outliner → Creates outline
+    │
     ├── Writers (Parallel)
     │   ├── WriterProfound
     │   ├── WriterRhetorical
     │   └── WriterSteady
+    │
     ├── Graders (Parallel)
     │   ├── GraderProfound
     │   ├── GraderRhetorical
     │   └── GraderSteady
-    └── Aggregator → Merges results
+    │
+    ├── Revisers (Parallel) ← NEW: Apply feedback + word count check
+    │   ├── ReviserProfound (self-correction loop for 850-1050 chars)
+    │   ├── ReviserRhetorical
+    │   └── ReviserSteady
+    │
+    ├── Reviewers (Parallel) ← NEW: Quality gate + routing
+    │   ├── ReviewerProfound → ACCEPT/REVISE/REWRITE
+    │   ├── ReviewerRhetorical → ACCEPT/REVISE/REWRITE
+    │   └── ReviewerSteady → ACCEPT/REVISE/REWRITE
+    │       │
+    │       ├── ACCEPT → Aggregator
+    │       ├── REVISE → Back to Reviser (max 3 loops)
+    │       └── REWRITE → Back to Writer (max 3 loops)
+    │
+    └── Aggregator → Merges results (waits for all ACCEPT)
        ↓
     PostgreSQL (Store essays + scores)
        ↓
