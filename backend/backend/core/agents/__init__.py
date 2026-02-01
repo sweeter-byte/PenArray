@@ -6,7 +6,15 @@ Agents:
 - Outliner: Generates structured essay outline (DeepSeek R1)
 - Writer: Generates essay drafts in three styles (R1/V3)
 - Grader: Scores and critiques essays (DeepSeek R1)
+- Reviser: Professional editor that applies feedback (DeepSeek R1) [NEW]
+- Reviewer: Quality assurance and routing decisions (DeepSeek R1) [NEW]
 - Aggregator: Collects all results for final output
+
+Closed-Loop Revision System (NEW):
+Writer -> Grader -> Reviser -> Reviewer -> (Router)
+  - ACCEPT: Quality met, proceed to Aggregator
+  - REVISE: Minor issues, loop back to Reviser
+  - REWRITE: Major failure, loop back to Writer
 """
 
 from .base import get_chat_model, get_reasoner_model, publish_sse_event
@@ -19,6 +27,17 @@ from .grader import (
     grader_profound_node,
     grader_rhetorical_node,
     grader_steady_node,
+)
+from .reviser import (
+    reviser_profound_node,
+    reviser_rhetorical_node,
+    reviser_steady_node,
+)
+from .reviewer import (
+    reviewer_profound_node,
+    reviewer_rhetorical_node,
+    reviewer_steady_node,
+    get_routing_decision,
 )
 from .aggregator import aggregator_node
 
@@ -40,6 +59,15 @@ __all__ = [
     "grader_profound_node",
     "grader_rhetorical_node",
     "grader_steady_node",
+    # Parallel reviser nodes (NEW)
+    "reviser_profound_node",
+    "reviser_rhetorical_node",
+    "reviser_steady_node",
+    # Parallel reviewer nodes (NEW)
+    "reviewer_profound_node",
+    "reviewer_rhetorical_node",
+    "reviewer_steady_node",
+    "get_routing_decision",
     # Aggregator
     "aggregator_node",
 ]

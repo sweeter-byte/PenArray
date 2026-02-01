@@ -78,6 +78,11 @@ class EssayState(TypedDict, total=False):
 
         current_agent: Name of currently executing agent (for SSE)
         task_id: Database task ID for status updates
+
+        revision_count: Number of revision iterations per style (max 3)
+        reviewer_comments: Feedback from Reviewer agent per style
+        clean_word_counts: Exact character count per style (programmatic)
+        reviewer_decisions: Reviewer routing decision per style (ACCEPT/REVISE/REWRITE)
     """
     # Input fields
     topic: str
@@ -111,6 +116,16 @@ class EssayState(TypedDict, total=False):
 
     # Metadata for SSE streaming (Last-Write-Wins for parallel updates)
     current_agent: Annotated[str, lambda old, new: new]
+
+    # Revision system fields (Closed-Loop Revision System)
+    # Tracks the number of revision iterations to prevent infinite loops
+    revision_count: Annotated[Dict[str, int], merge_dicts]
+    # Comments from Reviewer agent for guiding revisions
+    reviewer_comments: Annotated[Dict[str, str], merge_dicts]
+    # Exact character count from programmatic counting (not LLM-estimated)
+    clean_word_counts: Annotated[Dict[str, int], merge_dicts]
+    # Reviewer decision for each style: ACCEPT, REVISE, or REWRITE
+    reviewer_decisions: Annotated[Dict[str, str], merge_dicts]
 
 
 # Style constants for type safety
