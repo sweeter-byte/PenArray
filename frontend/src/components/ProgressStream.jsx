@@ -110,46 +110,99 @@ function getStepIndex(agentKey) {
 /**
  * Format intermediate data for display
  */
-function formatIntermediateData(data) {
+/**
+ * Format intermediate data for display
+ */
+function formatIntermediateData(data, agentKey) {
   if (!data) return '暂无数据';
 
-  if (typeof data === 'string') {
-    return data;
+  // Handle Librarian Data (Materials)
+  if (data.quotes || data.facts || data.theories || data.literature) {
+    let md = '';
+    const sectionMap = {
+      quotes: '名言警句',
+      facts: '事实论据',
+      theories: '理论支撑',
+      literature: '文学素材'
+    };
+
+    for (const [key, label] of Object.entries(sectionMap)) {
+      if (data[key] && data[key].length > 0) {
+        md += `### ${label}\n`;
+        data[key].forEach(item => {
+          md += `- ${item}\n`;
+        });
+        md += '\n';
+      }
+    }
+    return md || '未检索到有效素材';
   }
 
+  // Handle Outliner Data
+  if (data.introduction && data.body && data.conclusion) {
+    let md = `**结构类型**：${data.structure_type || '未定义'}\n\n`;
+
+    // Introduction
+    md += `### 第一部分：开头\n`;
+    md += `- **开篇方式**：${data.introduction.method}\n`;
+    md += `- **核心内容**：${data.introduction.content}\n`;
+    md += `- **预计字数**：${data.introduction.word_count}字\n\n`;
+
+    // Body
+    md += `### 第二部分：主体\n`;
+    data.body.forEach((item, index) => {
+      md += `#### 分论点 ${index + 1}\n`;
+      md += `- **论点**：${item.sub_thesis}\n`;
+      md += `- **论证**：${item.method}\n`;
+      if (item.materials && item.materials.length > 0) {
+        md += `- **素材**：${item.materials.join('、')}\n`;
+      }
+      md += `\n`;
+    });
+
+    // Conclusion
+    md += `### 第三部分：结尾\n`;
+    md += `- **总结方式**：${data.conclusion.method}\n`;
+    md += `- **升华方向**：${data.conclusion.elevation}\n`;
+
+    return md;
+  }
+
+  // Handle Strategist Data (Analysis)
+  if (data.analysis || (data.angle && data.thesis)) {
+    let md = '';
+    if (data.angle) md += `**立意角度**：${data.angle}\n\n`;
+    if (data.thesis) md += `**中心论点**：${data.thesis}\n\n`;
+
+    if (data.style_params) {
+      md += `### 风格设计\n`;
+      const styles = {
+        profound: '深刻型',
+        rhetorical: '文采型',
+        steady: '稳健型'
+      };
+
+      for (const [key, name] of Object.entries(styles)) {
+        if (data.style_params[key]) {
+          md += `- **${name}**：${JSON.stringify(data.style_params[key])}\n`;
+        }
+      }
+    }
+    return md || JSON.stringify(data, null, 2);
+  }
+
+  // Fallback: Generic formatting
+  if (typeof data === 'string') return data;
+
   if (Array.isArray(data)) {
-    return data.map((item, i) => `${i + 1}. ${typeof item === 'string' ? item : JSON.stringify(item)}`).join('\n');
+    return data.map(item => `- ${typeof item === 'object' ? JSON.stringify(item) : item}`).join('\n');
   }
 
   if (typeof data === 'object') {
-    const parts = [];
-    for (const [key, value] of Object.entries(data)) {
-      const keyMap = {
-        angle: '立意角度',
-        thesis: '中心论点',
-        quotes: '名言警句',
-        facts: '事实论据',
-        theories: '理论支撑',
-        literature: '文学素材',
-        structure_type: '结构类型',
-        introduction: '开头',
-        body: '主体',
-        conclusion: '结尾',
-      };
-      const displayKey = keyMap[key] || key;
-
-      if (Array.isArray(value)) {
-        parts.push(`**${displayKey}：**\n${value.map((v, i) => `- ${v}`).join('\n')}`);
-      } else if (typeof value === 'object' && value !== null) {
-        parts.push(`**${displayKey}：**\n${JSON.stringify(value, null, 2)}`);
-      } else if (value) {
-        parts.push(`**${displayKey}：** ${value}`);
-      }
-    }
-    return parts.join('\n\n');
+    return '```json\n' + JSON.stringify(data, null, 2) + '\n```';
   }
 
-  return JSON.stringify(data, null, 2);
+  return String(data);
 }
 
 /**

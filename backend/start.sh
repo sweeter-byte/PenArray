@@ -45,5 +45,11 @@ echo "Initializing database..."
 python -m backend.db.init_db
 
 echo ""
+echo "Seeding vector database (RAG materials)..."
+# Seed vector db from materials.json only if not already populated (or always check)
+# The script handles skipping duplicates internally
+python seed_vector_db.py
+
+echo ""
 echo "Starting FastAPI server..."
 exec uvicorn backend.main:app --host 0.0.0.0 --port 8000
