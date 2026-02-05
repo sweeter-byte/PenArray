@@ -9,6 +9,7 @@ FROM python:3.10-slim as builder
 WORKDIR /app
 
 # Install build dependencies
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
@@ -17,8 +18,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements first for better caching
 COPY requirements.txt .
 
+# Pre-install CPU-only PyTorch (Small 175MB version)
+# Use huge timeout (3600s) because download.pytorch.org is slow in China
+RUN pip install --default-timeout=3600 --user --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 # Install Python dependencies to user directory
-# RUN pip install --user --no-cache-dir -r requirements.txt
 RUN pip install --user --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # ============================================
@@ -29,8 +33,13 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Install runtime dependencies only
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || true
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    tesseract-ocr \
+    tesseract-ocr-chi-sim \
+    tesseract-ocr-chi-tra \
+    libtesseract-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed packages from builder stage

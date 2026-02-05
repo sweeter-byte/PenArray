@@ -78,3 +78,7 @@ celerybeat.pid
 *.bak
 *.tmp
 .cache/
+
+# --- Deployment ---
+DEPLOYMENT_GUIDE.md
+DOCKER_GUIDE.md

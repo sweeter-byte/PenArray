@@ -26,28 +26,28 @@ PenArray solves the problem of generic LLMs producing essays that lack argumenta
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        Frontend (React + Vite)                       │
-│                           Nginx / Port 80                            │
+│                        Frontend (React + Vite)                      │
+│                           Nginx / Port 80                           │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        Backend (FastAPI)                             │
-│                          Uvicorn / Port 8000                         │
+│                        Backend (FastAPI)                            │
+│                          Uvicorn / Port 8000                        │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
+│                                                                     │
 │  ┌──────────┐    ┌──────────┐    ┌──────────────────────────────┐   │
 │  │   Auth   │    │  Task    │    │      LangGraph Workflow      │   │
 │  │   API    │    │   API    │───▶│                              │   │
 │  └──────────┘    └──────────┘    │  Strategist → Librarian      │   │
-│                                  │       ↓                       │   │
-│                                  │    Outliner                   │   │
-│                                  │       ↓                       │   │
-│                                  │  ┌─────────┬─────────┬─────┐ │   │
-│                                  │  │Profound │Rhetoric │Steady│ │   │
-│                                  │  │ Writer  │ Writer  │Writer│ │   │
-│                                  │  └────┬────┴────┬────┴──┬───┘ │   │
-│                                  │       ↓         ↓       ↓     │   │
+│                                  │       ↓                      │   │
+│                                  │    Outliner                  │   │
+│                                  │       ↓                      │   │
+│                                  │  ┌─────────┬─────────┬───────┐ │   │
+│                                  │  │Profound │Rhetoric │Steady │ │   │
+│                                  │  │ Writer  │ Writer  │Writer │ │   │
+│                                  │  └────┬────┴────┬────┴───────┘ │   │
+│                                  │       ↓         ↓              │   │
 │                                  │  ┌─────────┬─────────┬─────┐ │   │
 │                                  │  │ Grader  │ Grader  │Grader│ │   │
 │                                  │  └────┬────┴────┬────┴──┬───┘ │   │

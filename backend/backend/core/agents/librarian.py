@@ -47,12 +47,23 @@ def get_chroma_collection():
     global _chroma_client
     try:
         import chromadb
+        from chromadb.utils import embedding_functions
+        
         if _chroma_client is None:
             _chroma_client = chromadb.HttpClient(
                 host=settings.chroma_host,
                 port=settings.chroma_port,
             )
-        return _chroma_client.get_or_create_collection("materials_collection")
+        
+        # Explicitly use SentenceTransformer embeddings causing it to use hf-mirror via huggingface_hub
+        emb_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name="all-MiniLM-L6-v2"
+        )
+        
+        return _chroma_client.get_or_create_collection(
+            name="materials_collection",
+            embedding_function=emb_fn
+        )
     except Exception as e:
         print(f"Warning: ChromaDB not available: {e}")
         return None

@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import settings
@@ -50,10 +51,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 # Include API routers
 app.include_router(api_router, prefix=settings.api_prefix)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="backend/static"), name="static")
 
 
 @app.get("/health", tags=["Health"])

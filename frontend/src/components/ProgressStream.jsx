@@ -11,6 +11,8 @@ import {
   Star,
   X,
   Eye,
+  FileEdit,
+  ShieldCheck,
 } from 'lucide-react';
 import clsx from 'clsx';
 import ReactMarkdown from 'react-markdown';
@@ -70,6 +72,26 @@ const AGENT_STEPS = [
     bgColor: 'bg-orange-100',
     subSteps: ['grader_profound', 'grader_rhetorical', 'grader_steady'],
     modalTitle: '评分详情',
+  },
+  {
+    key: 'reviser',
+    name: '修改员',
+    nameCn: '修改员',
+    icon: FileEdit,
+    description: '正在根据意见修改文章...',
+    color: 'text-pink-500',
+    bgColor: 'bg-pink-100',
+    modalTitle: '文章修订',
+  },
+  {
+    key: 'reviewer',
+    name: '审核员',
+    nameCn: '审核员',
+    icon: ShieldCheck,
+    description: '正在进行最终质量审核...',
+    color: 'text-indigo-500',
+    bgColor: 'bg-indigo-100',
+    modalTitle: '审核报告',
   },
   {
     key: 'completed',
@@ -184,7 +206,18 @@ function formatIntermediateData(data, agentKey) {
 
       for (const [key, name] of Object.entries(styles)) {
         if (data.style_params[key]) {
-          md += `- **${name}**：${JSON.stringify(data.style_params[key])}\n`;
+          const params = data.style_params[key];
+          md += `#### ${name}\n`;
+          if (typeof params === 'object') {
+            if (params.focus) md += `- **侧重方向**：${params.focus}\n`;
+            if (params.structure) md += `- **结构安排**：${params.structure}\n`;
+            if (params.method) md += `- **论证手法**：${params.method}\n`;
+            if (params.rhetoric && params.rhetoric.length > 0) md += `- **修辞手法**：${Array.isArray(params.rhetoric) ? params.rhetoric.join('、') : params.rhetoric}\n`;
+            if (params.references && params.references.length > 0) md += `- **参考素材**：${Array.isArray(params.references) ? params.references.join('、') : params.references}\n`;
+          } else {
+            md += `${params}\n`;
+          }
+          md += '\n';
         }
       }
     }

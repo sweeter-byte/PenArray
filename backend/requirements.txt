@@ -13,7 +13,7 @@ python-multipart
 passlib
 bcrypt==4.0.1
 # Vector DB and others
-chromadb
+chromadb==0.5.3
 python-dotenv
 httpx
 pydantic-settings
@@ -21,3 +21,8 @@ python-jose[cryptography]
 # Document export (Phase 2)
 python-docx
 reportlab
+# Image Upload & OCR
+Pillow
+pytesseract
+# Embeddings
+sentence-transformers

@@ -172,7 +172,33 @@ function EssayCard({ essay, isBestScore }) {
             <ReactMarkdown
               className="prose prose-sm max-w-none prose-p:my-2 prose-headings:font-bold prose-headings:text-gray-900 prose-ul:list-disc prose-ul:pl-4"
             >
-              {essay.content}
+              {(() => {
+                // Remove the first line if it's a markdown header or bold title to avoid duplication
+                let content = essay.content || '';
+                let lines = content.trim().split('\n');
+
+                // Remove empty leading lines
+                while (lines.length > 0 && !lines[0].trim()) {
+                  lines.shift();
+                }
+
+                if (lines.length > 0) {
+                  const firstLine = lines[0].trim();
+                  // Check for # Header or **Bold Title** or just a short line acting as title
+                  // Criteria: Starts with # OR (Starts with ** AND Ends with **) OR (Short length < 30)
+                  const isHeader = firstLine.startsWith('#');
+                  const isBoldTitle = firstLine.startsWith('**') && firstLine.endsWith('**') && firstLine.length < 50;
+                  const isShortTitle = firstLine.length < 30 && !firstLine.includes('。'); // Short and not a sentence
+
+                  if (isHeader || isBoldTitle || isShortTitle) {
+                    // Check if it's really the title (fuzzy match or just assume context)
+                    // For safety, we only remove if it's clearly a header-like structure
+                    // The user explicitly complained about duplicate titles, so we can be slightly aggressive
+                    return lines.slice(1).join('\n').trim();
+                  }
+                }
+                return content;
+              })()}
             </ReactMarkdown>
           </div>
 

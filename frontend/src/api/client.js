@@ -69,6 +69,19 @@ export const taskApi = {
     }),
 
   /**
+   * Upload image file and get OCR text
+   */
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.post('/upload/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  /**
    * Get task result with all essays
    */
   getResult: (taskId) =>
@@ -155,36 +168,24 @@ export const exportApi = {
  * Helper function to download file with authentication
  */
 async function downloadFile(url, token) {
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
+  // Use direct download via URL query param to avoid blob/CORS issues
+  const downloadUrl = url.includes('?')
+    ? `${url}&token=${encodeURIComponent(token)}`
+    : `${url}?token=${encodeURIComponent(token)}`;
 
-  if (!response.ok) {
-    throw new Error('下载失败');
-  }
+  console.log('Starting direct download:', downloadUrl);
 
-  // Get filename from Content-Disposition header
-  const contentDisposition = response.headers.get('Content-Disposition');
-  let filename = 'document';
-  if (contentDisposition) {
-    const matches = contentDisposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
-    if (matches && matches[1]) {
-      filename = decodeURIComponent(matches[1]);
-    }
-  }
-
-  // Create blob and download
-  const blob = await response.blob();
-  const downloadUrl = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = downloadUrl;
-  link.download = filename;
+  link.setAttribute('download', ''); // Hint to browser
+  link.style.display = 'none'; // Ensure hidden
   document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(downloadUrl);
+
+  // Some browsers need a microtask delay
+  setTimeout(() => {
+    link.click();
+    document.body.removeChild(link);
+  }, 100);
 }
 
 /**

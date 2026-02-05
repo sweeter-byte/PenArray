@@ -37,25 +37,21 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+from fastapi import Depends, HTTPException, status, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+# ... imports ...
+
+
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    token: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ) -> User:
     """
     Get the currently authenticated user from JWT token.
 
-    This dependency extracts the Bearer token from the Authorization header,
-    validates it, and returns the corresponding User object.
-
-    Args:
-        credentials: HTTP Bearer credentials from request header
-        db: Database session
-
-    Returns:
-        User: The authenticated user object
-
-    Raises:
-        HTTPException: 401 if token is invalid, expired, or user not found
+    Supports both Bearer header (primary) and URL query parameter (secondary, for file downloads).
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -63,10 +59,17 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    token = credentials.credentials
+    jwt_token = None
+    if credentials:
+        jwt_token = credentials.credentials
+    elif token:
+        jwt_token = token
+    
+    if not jwt_token:
+        raise credentials_exception
 
     # Decode and validate JWT token
-    payload = decode_access_token(token)
+    payload = decode_access_token(jwt_token)
     if payload is None:
         raise credentials_exception
 

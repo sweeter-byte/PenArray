@@ -145,6 +145,189 @@ function Dashboard() {
     }
   }, [essays]);
 
+  // AUTO-RESUME LOGIC: Check status of pending task on load
+  useEffect(() => {
+    let cleanupStream = null;
+
+    const resumeTask = async () => {
+      // Only resume if we have a task, NO essays yet, and we aren't already loading/complete
+      if (currentTask && essays.length === 0 && !isComplete && !isLoading) {
+        console.log('Resuming pending task:', currentTask.task_id);
+        setIsLoading(true);
+
+        try {
+          // 1. Check current status from backend
+          const statusRes = await taskApi.getStatus(currentTask.task_id);
+          const status = statusRes.data.status;
+          console.log('Task status on resume:', status);
+
+          if (status === 'completed') {
+            // 2a. If already done, fetch result immediately
+            setProgressMessage('检测到任务已完成，正在获取结果...');
+            const resultResponse = await taskApi.getResult(currentTask.task_id);
+            const result = resultResponse.data;
+
+            // Reuse result processing logic
+            console.log('Resume - Final Result:', result);
+
+            // Backfill intermediate data for modals
+            const backfillData = {};
+
+            // 1. Strategist/Librarian/Outliner from meta_info
+            if (result.meta_info) {
+              backfillData.strategist = {
+                message: '审题分析完成',
+                data: {
+                  angle: result.meta_info.angle,
+                  thesis: result.meta_info.thesis,
+                  style_params: result.meta_info.style_params // Ensure this is passed if available
+                }
+              };
+              backfillData.librarian = {
+                message: '素材检索完成',
+                data: result.meta_info.materials
+              };
+              backfillData.outliner = {
+                message: '大纲生成完成',
+                data: result.meta_info.outline
+              };
+            }
+
+            // 2. Writer/Grader from essays/drafts
+            const essaysToProcess = (result.essays && result.essays.length > 0) ? result.essays : [];
+            // If legacy drafts format...
+            if (essaysToProcess.length === 0 && result.drafts) {
+              ['profound', 'rhetorical', 'steady'].forEach(style => {
+                if (result.drafts[style]) {
+                  essaysToProcess.push({
+                    style,
+                    content: result.drafts[style],
+                    score: result.scores?.[style],
+                    critique: result.critiques?.[style]
+                  });
+                }
+              });
+            }
+
+            if (essaysToProcess.length > 0) {
+              // Mock Writer Data
+              backfillData.writer = {
+                message: '写作完成',
+                data: essaysToProcess.map(e => `【${e.style === 'profound' ? '深刻型' : e.style === 'rhetorical' ? '文采型' : '稳健型'}】\n${e.content.substring(0, 100)}...`).join('\n\n')
+              };
+              // Mock Grader Data
+              backfillData.grader = {
+                message: '评分完成',
+                data: essaysToProcess.map(e => `【${e.style}】得分：${e.score}\n评语：${e.critique ? e.critique.substring(0, 50) + '...' : '暂无'}`).join('\n')
+              };
+
+              // Set Reviser/Reviewer as 'completed' generic
+              backfillData.reviser = { message: '修订完成', data: '文章已根据评分意见进行修订。' };
+              backfillData.reviewer = { message: '审核通过', data: '所有文章已通过最终质量审核。' };
+            }
+
+            setIntermediateData(backfillData);
+
+            if (result.essays && Array.isArray(result.essays) && result.essays.length > 0) {
+              setEssays(result.essays);
+            } else if (result.drafts) {
+              // Fallback logic
+              const essayList = [];
+              const styles = ['profound', 'rhetorical', 'steady'];
+              for (const style of styles) {
+                if (draft) {
+                  essayList.push({
+                    id: style,
+                    style: style,
+                    content: draft,
+                    score: result.scores?.[style] ?? null,
+                    critique: result.critiques?.[style] ?? null,
+                    title: (result.titles?.[style]) || (style.charAt(0).toUpperCase() + style.slice(1) + ' Essay'),
+                  });
+                }
+              }
+              setEssays(essayList);
+            }
+            setIsComplete(true);
+            setIsLoading(false);
+
+          } else if (status === 'failed') {
+            setIsError(true);
+            setProgressMessage('任务此前已失败');
+            setIsLoading(false);
+          } else {
+            // 2b. If still processing/queued, reconnect stream
+            setProgressMessage('正在恢复进度连接...');
+            cleanupStream = taskApi.streamProgress(currentTask.task_id, {
+              onMessage: (data) => {
+                setCurrentAgent(data.agent);
+                setProgressMessage(data.message || `${data.agent} 正在工作...`);
+                addLog(data.agent, data.message || '处理中... (已恢复连接)');
+
+                if (data.data) {
+                  setIntermediateData((prev) => ({
+                    ...prev,
+                    [data.agent]: {
+                      message: data.message,
+                      data: data.data,
+                      timestamp: Date.now(),
+                    },
+                  }));
+                }
+              },
+              onComplete: async () => {
+                // When stream says complete, fetch result
+                setIsComplete(true);
+                setProgressMessage('生成完成！');
+                try {
+                  const rRes = await taskApi.getResult(currentTask.task_id);
+                  const res = rRes.data;
+                  if (res.essays && Array.isArray(res.essays) && res.essays.length > 0) {
+                    setEssays(res.essays);
+                  } else if (res.drafts) {
+                    // fallback logic copy
+                    const essayList = [];
+                    const styles = ['profound', 'rhetorical', 'steady'];
+                    for (const style of styles) {
+                      const draft = res.drafts[style];
+                      if (draft) {
+                        essayList.push({
+                          id: style, style: style, content: draft,
+                          score: res.scores?.[style] ?? null,
+                          critique: res.critiques?.[style] ?? null,
+                          title: (res.titles?.[style]) || (style.charAt(0).toUpperCase() + style.slice(1) + ' Essay'),
+                        });
+                      }
+                    }
+                    setEssays(essayList);
+                  }
+                  setIsLoading(false);
+                } catch (e) { console.error(e); setIsLoading(false); }
+              },
+              onError: (err) => {
+                console.error('Stream error on resume', err);
+                // Don't fail immediately on stream error, maybe just polling?
+                // For now, simple error
+                addLog('system', '连接断开', 'error');
+              }
+            });
+          }
+        } catch (err) {
+          console.error('Failed to resume task:', err);
+          setIsError(true);
+          setProgressMessage('无法恢复任务进度');
+          setIsLoading(false);
+        }
+      }
+    };
+
+    resumeTask();
+
+    return () => {
+      if (cleanupStream) cleanupStream();
+    };
+  }, [currentTask]); // Depend on currentTask (which is set on mount)
+
   // Save current task to localStorage
   useEffect(() => {
     if (currentTask) {
@@ -185,20 +368,60 @@ function Dashboard() {
     setIntermediateData({});
     setIsLoading(true);
 
-    // Save prompt for persistence
-    setInputPrompt(prompt);
-    localStorage.setItem(STORAGE_KEYS.INPUT_PROMPT, prompt);
-
     try {
-      // If there's an image, we'd need to upload it first
-      // For now, we'll just use the prompt
+      let finalPrompt = prompt;
       let imageUrl = null;
+
+      // Check if image upload is needed
       if (imageFile) {
-        addLog('system', '图片上传功能尚未实现，仅使用文字题目', 'warning');
+        setProgressMessage('正在识别图片内容...');
+        addLog('system', '正在上传并识别图片...');
+
+        try {
+          // Upload image
+          const uploadRes = await taskApi.upload(imageFile);
+          const { url, text } = uploadRes.data;
+
+          imageUrl = url;
+          addLog('system', '图片上传成功');
+
+          if (text) {
+            addLog('system', `OCR识别成功: ${text.substring(0, 20)}...`);
+            // Should we replace prompt if empty?
+            if (!finalPrompt.trim()) {
+              finalPrompt = text;
+              // Update UI prompt state too so it reflects
+              setInputPrompt(text);
+              localStorage.setItem(STORAGE_KEYS.INPUT_PROMPT, text);
+            } else {
+              // User provided prompt + image.
+              // We append the OCR text to prompt for context, or just keep it separately?
+              // Strategy: Pass image_url to backend, but also if prompt was small, maybe user expects OCR.
+              // For now, let's append if prompt is short, or just rely on backend?
+              // The backend `create_task` takes `prompt` and `image_url`.
+              // If prompt is empty, we MUST fill it.
+              // If prompt is not empty, we leave it as is.
+            }
+          } else {
+            addLog('system', '未识别到文字，将仅作为参考图片上传', 'warning');
+          }
+
+        } catch (uploadErr) {
+          console.error("Upload failed", uploadErr);
+          addLog('system', '图片上传失败，尝试继续仅使用文字...', 'error');
+          // If prompt is empty and upload failed, we must stop
+          if (!finalPrompt.trim()) {
+            throw new Error('图片上传失败且未输入题目文字');
+          }
+        }
+      }
+
+      if (!finalPrompt.trim()) {
+        throw new Error('请输入题目或上传包含文字的图片');
       }
 
       // Create the task with optional custom structure
-      const response = await taskApi.create(prompt, imageUrl, customStructure);
+      const response = await taskApi.create(finalPrompt, imageUrl, customStructure);
       const task = response.data;
       setCurrentTask(task);
       addLog('system', `任务已创建，ID: ${task.task_id}`);
@@ -255,28 +478,34 @@ function Dashboard() {
               }));
             }
 
+            console.log('Final Result Received:', result); // DEBUG Log
+
             // Transform API response essays array
-            if (result.essays && Array.isArray(result.essays)) {
+            if (result.essays && Array.isArray(result.essays) && result.essays.length > 0) {
+              console.log('Setting essays from result.essays:', result.essays);
               setEssays(result.essays);
-            } else {
-              // Fallback for legacy format if needed
+            } else if (result.drafts) {
+              // Fallback for legacy format or meta_info populated format
+              console.log('Setting essays from result.drafts fallback');
               const essayList = [];
               const styles = ['profound', 'rhetorical', 'steady'];
 
               for (const style of styles) {
-                const draft = result.drafts?.[style];
+                const draft = result.drafts[style]; // Access directly as object
                 if (draft) {
                   essayList.push({
-                    id: style,
+                    id: style, // Use style as ID for draft mode
                     style: style,
                     content: draft,
                     score: result.scores?.[style] ?? null,
                     critique: result.critiques?.[style] ?? null,
-                    title: style.charAt(0).toUpperCase() + style.slice(1) + ' Essay',
+                    title: (result.titles?.[style]) || (style.charAt(0).toUpperCase() + style.slice(1) + ' Essay'),
                   });
                 }
               }
               setEssays(essayList);
+            } else {
+              console.error('No essays found in result:', result);
             }
             setIsLoading(false);
           } catch (err) {
